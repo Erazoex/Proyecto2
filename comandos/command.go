@@ -33,7 +33,7 @@ func WriteMBR(master *datos.MBR, path string) {
 		file.Close()
 		return
 	}
-	fmt.Println("se escribio correctamente! :D")
+	// fmt.Println("se escribio correctamente! :D")
 	defer file.Close()
 }
 

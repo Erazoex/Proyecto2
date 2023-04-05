@@ -42,7 +42,8 @@ func (a Analyzer) MatchParams(command string, params []string) {
 		m := comandos.Mkdisk{}
 		m.Exe(params)
 	} else if command == "rmdisk" {
-		fmt.Println("")
+		r := comandos.Rmdisk{}
+		r.Exe(params)
 	} else if command == "fdisk" {
 		fmt.Println("")
 	} else if command == "mount" {

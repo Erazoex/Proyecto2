@@ -63,7 +63,6 @@ func (m Mkdisk) Mkdisk(size int, fit []byte, unit byte, path string) bool {
 	var fileSize = 0
 	var master datos.MBR
 	// Comprobando si existe una ruta valida para la creacion del disco
-	fmt.Println("el path dentro de mkdisk: ", path)
 	if path == "" {
 		fmt.Println("no se encontro una ruta")
 		return false
@@ -127,11 +126,6 @@ func (m Mkdisk) Mkdisk(size int, fit []byte, unit byte, path string) bool {
 	}
 	FillPartitions(&master)
 	WriteMBR(&master, path)
-	fmt.Println("antes de escribir")
-	fmt.Println(master)
-	nuevoMaster := GetMBR(path)
-	fmt.Println("despues de leer")
-	fmt.Println(nuevoMaster)
 	return true
 }
 
