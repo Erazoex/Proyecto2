@@ -22,7 +22,7 @@ type Mkdisk struct {
 }
 
 func (m Mkdisk) Exe(parametros []string) {
-	m.SaveParams(parametros)
+	m.params = m.SaveParams(parametros)
 	if m.Mkdisk(m.params.size, m.params.fit, m.params.unit, m.params.path) {
 		fmt.Printf("\nmkdisk realizado con exito para la ruta: %s\n\n", m.params.path)
 	} else {
@@ -30,35 +30,40 @@ func (m Mkdisk) Exe(parametros []string) {
 	}
 }
 
-func (m Mkdisk) SaveParams(parametros []string) {
-	fmt.Println(parametros)
+func (m Mkdisk) SaveParams(parametros []string) ParametrosMkdisk {
+	// fmt.Println(parametros)
 	for _, v := range parametros {
-		fmt.Println(v)
+		// fmt.Println(v)
 		if strings.Contains(v, "path") {
-			v = strings.Replace(v, "path=", "", 1)
+			v = strings.ReplaceAll(v, "path=", "")
 			v = strings.ReplaceAll(v, "\"", "")
 			m.params.path = v
 		} else if strings.Contains(v, "size") {
-			v = strings.Replace(v, "size=", "", 1)
+			v = strings.ReplaceAll(v, "size=", "")
+			v = strings.ReplaceAll(v, " ", "")
 			num, err := strconv.Atoi(v)
 			if err != nil {
-				fmt.Println("hubo un error al convertir a int")
+				fmt.Println("hubo un error al convertir a int", err.Error())
 			}
 			m.params.size = num
 		} else if strings.Contains(v, "unit") {
-			v = strings.Replace(v, "unit=", "", 1)
+			v = strings.ReplaceAll(v, "unit=", "")
+			v = strings.ReplaceAll(v, " ", "")
 			m.params.unit = v[0]
 		} else if strings.Contains(v, "fit") {
-			v = strings.Replace(v, "fit=", "", 1)
+			v = strings.ReplaceAll(v, "fit=", "")
+			v = strings.ReplaceAll(v, " ", "")
 			m.params.fit = []byte(v)
 		}
 	}
+	return m.params
 }
 
 func (m Mkdisk) Mkdisk(size int, fit []byte, unit byte, path string) bool {
 	var fileSize = 0
 	var master datos.MBR
 	// Comprobando si existe una ruta valida para la creacion del disco
+	fmt.Println("el path dentro de mkdisk: ", path)
 	if path == "" {
 		fmt.Println("no se encontro una ruta")
 		return false
@@ -99,7 +104,7 @@ func (m Mkdisk) Mkdisk(size int, fit []byte, unit byte, path string) bool {
 	}
 
 	iterator := 0
-	MkDir(path)
+	MkDirectory(path) // creando el directorio para el disco sino existe
 	binaryFile, err := os.Create(path)
 	if err != nil {
 		fmt.Println("error al crear el disco")
@@ -122,16 +127,21 @@ func (m Mkdisk) Mkdisk(size int, fit []byte, unit byte, path string) bool {
 	}
 	FillPartitions(&master)
 	WriteMBR(&master, path)
+	fmt.Println("antes de escribir")
+	fmt.Println(master)
+	nuevoMaster := GetMBR(path)
+	fmt.Println("despues de leer")
+	fmt.Println(nuevoMaster)
 	return true
 }
 
 func FillPartitions(master *datos.MBR) {
 	for _, v := range master.Mbr_partitions {
 		v.Part_status = '0'
-		v.Part_fit = ' '
+		v.Part_fit = '0'
 		v.Part_start = -1
 		v.Part_size = 0
-		v.Part_type = ' '
-		copy(v.Part_name[:], "")
+		v.Part_type = '0'
+		copy(v.Part_name[:], "0")
 	}
 }

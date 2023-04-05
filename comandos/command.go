@@ -1,7 +1,6 @@
 package comandos
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"math/rand"
@@ -15,26 +14,26 @@ import (
 // En este paquete se encuentran las funciones en comun
 // que se utilizan entre la mayoria de comandos.
 func WriteMBR(master *datos.MBR, path string) {
-	file, err := os.Open(path)
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("no se pudo abrir el archivo para escribir el MBR", err.Error())
 		return
 	}
 	// Posicionandonos en el principio del archivo
 	_, err = file.Seek(0, 0)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("no se pudo posicionar en el principio del archivo", err.Error())
 		return
 	}
 	// Escribiendo el MBR
-	var masterBuffer bytes.Buffer
-	binary.Write(&masterBuffer, binary.BigEndian, master)
-	_, err = file.Write(masterBuffer.Bytes())
+	// var masterBuffer bytes.Buffer
+	err = binary.Write(file, binary.LittleEndian, master)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("no se pudo escribir el MBR", err.Error())
+		file.Close()
 		return
 	}
-
+	fmt.Println("se escribio correctamente! :D")
 	defer file.Close()
 }
 
@@ -58,7 +57,7 @@ func GetMBR(path string) datos.MBR {
 	return mbr
 }
 
-func MkDir(fullPath string) {
+func MkDirectory(fullPath string) {
 	directory := path.Dir(fullPath)
 	if _, err := os.Stat(directory); os.IsNotExist(err) {
 		err = os.MkdirAll(directory, 0777)

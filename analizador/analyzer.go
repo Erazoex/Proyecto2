@@ -13,14 +13,10 @@ type Analyzer struct {
 }
 
 func (a Analyzer) Exe(input string) {
-	fmt.Println(input)
 	commandsAndParams := a.Split_input(input)
-	fmt.Printf("aqui imprime esto: %v\n", commandsAndParams)
 	var command string
 	var params []string
 	for i, v := range commandsAndParams {
-		fmt.Println(i)
-		fmt.Println(v)
 		if i == 0 {
 			command = v
 		} else {
