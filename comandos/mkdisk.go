@@ -12,7 +12,7 @@ import (
 
 type ParametrosMkdisk struct {
 	size int
-	fit  []byte
+	fit  byte
 	unit byte
 	path string
 }
@@ -53,13 +53,13 @@ func (m Mkdisk) SaveParams(parametros []string) ParametrosMkdisk {
 		} else if strings.Contains(v, "fit") {
 			v = strings.ReplaceAll(v, "fit=", "")
 			v = strings.ReplaceAll(v, " ", "")
-			m.params.fit = []byte(v)
+			m.params.fit = v[0]
 		}
 	}
 	return m.params
 }
 
-func (m Mkdisk) Mkdisk(size int, fit []byte, unit byte, path string) bool {
+func (m Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
 	var fileSize = 0
 	var master datos.MBR
 	// Comprobando si existe una ruta valida para la creacion del disco
