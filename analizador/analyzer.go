@@ -45,11 +45,11 @@ func (a Analyzer) MatchParams(command string, params []string) {
 		r := comandos.Rmdisk{}
 		r.Exe(params)
 	} else if command == "fdisk" {
-		fmt.Println("")
+		f := comandos.Fdisk{}
+		f.Exe(params)
 	} else if command == "mount" {
-		fmt.Println("")
-	} else if command == "unmount" {
-		fmt.Println("")
+		m := comandos.Mount{}
+		m.Exe(params)
 	} else if command == "mkfs" {
 		fmt.Println("")
 	} else if command == "login" {

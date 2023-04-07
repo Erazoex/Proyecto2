@@ -100,4 +100,25 @@ func (m Mount) Mount(path string, name [16]byte) bool {
 
 func (m Mount) MountParticionLogica(path string, whereToStart int, name [16]byte) {
 	//TODO: aqui me quede toca seguir manana
+	logicPartitionMounted := false
+	temp := ReadEBR(path, int64(whereToStart))
+	flag := true
+	for flag {
+		if bytes.Equal(temp.Part_name[:], name[:]) {
+			temp.Part_status = '2'
+			var partL *datos.EBR = new(datos.EBR)
+			lista.ListaMount.Mount(path, 53, nil, partL)
+			logicPartitionMounted = true
+			flag = false
+			break
+		} else if temp.Part_next != -1 {
+			temp = ReadEBR(path, temp.Part_next)
+		} else {
+			flag = false
+		}
+	}
+	if !logicPartitionMounted {
+		fmt.Printf("no se encontro una particion con el nombre %s\n", name)
+		return
+	}
 }

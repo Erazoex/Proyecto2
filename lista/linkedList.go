@@ -8,30 +8,30 @@ import (
 )
 
 type MountNode struct {
-	key, ruta   string
-	digits, pos int
-	value       *datos.Partition
-	valueL      *datos.EBR
-	next, prev  *MountNode
+	Key, Ruta   string
+	Digits, Pos int
+	Value       *datos.Partition
+	ValueL      *datos.EBR
+	Next, Prev  *MountNode
 }
 
 func (m MountNode) MountNode(ruta string, digits int, pos int, value *datos.Partition, valueL *datos.EBR) {
-	m.ruta = ruta
-	m.digits = digits
-	m.pos = pos
-	m.value = value
-	m.valueL = valueL
-	m.next = nil
-	m.prev = nil
+	m.Ruta = ruta
+	m.Digits = digits
+	m.Pos = pos
+	m.Value = value
+	m.ValueL = valueL
+	m.Next = nil
+	m.Prev = nil
 	m.CreateKey()
 }
 
 func (m MountNode) CreateKey() {
-	directory := strings.Split(m.ruta, "/")
+	directory := strings.Split(m.Ruta, "/")
 	lastPart := directory[len(directory)-1]
 	fileNameParts := strings.Split(lastPart, ".")
 	filename := fileNameParts[0]
-	m.key = strconv.Itoa(m.digits) + strconv.Itoa(m.pos) + filename
+	m.Key = strconv.Itoa(m.Digits) + strconv.Itoa(m.Pos) + filename
 }
 
 type MountList struct {
@@ -45,16 +45,16 @@ func (m MountList) IsEmpty() bool {
 
 func (m MountList) Mount(path string, digit int, part *datos.Partition, partL *datos.EBR) {
 	newNode := &MountNode{
-		ruta:   path,
-		key:    "",
-		digits: digit,
-		pos:    m.CountPartitions(path),
-		value:  part,
-		valueL: partL,
+		Ruta:   path,
+		Key:    "",
+		Digits: digit,
+		Pos:    m.CountPartitions(path),
+		Value:  part,
+		ValueL: partL,
 	}
 	if !m.IsEmpty() {
-		m.last.next = newNode
-		newNode.prev = m.last
+		m.last.Next = newNode
+		newNode.Prev = m.last
 		m.last = newNode
 		m.tamano++
 	} else {
@@ -70,15 +70,15 @@ func (m MountList) UnMount(key_ string) *MountNode {
 		temp := m.first
 		counter := 0
 		for counter < m.GetSize() {
-			if key_ == temp.key {
+			if key_ == temp.Key {
 				if temp == m.first {
-					m.first = m.first.next
+					m.first = m.first.Next
 				} else if temp == m.last {
-					m.last = m.last.prev
-					m.last.next = nil
+					m.last = m.last.Prev
+					m.last.Next = nil
 				} else {
-					temp.prev.next = temp.next
-					temp.next.prev = temp.prev
+					temp.Prev.Next = temp.Next
+					temp.Next.Prev = temp.Prev
 				}
 				m.tamano--
 				return temp
@@ -92,10 +92,10 @@ func (m MountList) GetNodeById(key_ string) *MountNode {
 	if !m.IsEmpty() {
 		temp := m.first
 		for temp != nil {
-			if key_ == temp.key {
+			if key_ == temp.Key {
 				return temp
 			}
-			temp = temp.next
+			temp = temp.Next
 		}
 	}
 	return nil
@@ -105,10 +105,10 @@ func (m MountList) NodeExist(key_ string) bool {
 	if !m.IsEmpty() {
 		temp := m.first
 		for temp != nil {
-			if key_ == temp.key {
+			if key_ == temp.Key {
 				return true
 			}
-			temp = temp.next
+			temp = temp.Next
 		}
 	}
 	return false
@@ -120,10 +120,10 @@ func (m MountList) CountPartitions(path string) int {
 		var temp *MountNode
 		temp = m.first
 		for temp != nil {
-			if path == temp.ruta {
+			if path == temp.Ruta {
 				contador++
 			}
-			temp = temp.next
+			temp = temp.Next
 		}
 	}
 	return contador
