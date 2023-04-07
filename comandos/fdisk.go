@@ -87,8 +87,7 @@ func (f Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, 
 		fmt.Println("no se encontro una ruta")
 		return false
 	}
-	var master datos.MBR
-	master = GetMBR(path)
+	master := GetMBR(path)
 	newPartition := datos.Partition{}
 	fileSize := 0
 	// tipo de unidad a utilizar, si el parametro esta vacio se utilizaran Kilobytes como default size.
@@ -101,7 +100,7 @@ func (f Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, 
 	} else if unit == ' ' {
 		fileSize = size * 1024
 	} else {
-		fmt.Println("debe ingresar una letra de tamano correcta\n")
+		fmt.Println("debe ingresar una letra de tamano correcta")
 		return false
 	}
 	// se debe comprobar que no exista ninguna particion con el mismo nombre
@@ -330,7 +329,7 @@ func FirstFit(master *datos.MBR, newPartition *datos.Partition) {
 	}
 }
 
-func (f Fdisk) CreateLogicPartition(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extendedFit byte, extendedName [16]byte) {
+func (f Fdisk) CreateLogicPartition(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extendedFit byte, extendedName [16]byte) bool {
 	if extendedFit == 'f' {
 		return FirstFitLogicPart(logicPartition, path, whereToStart, partitionSize, extendedName)
 	} else if extendedFit == 'b' {
@@ -338,10 +337,186 @@ func (f Fdisk) CreateLogicPartition(logicPartition *datos.EBR, path string, wher
 	} else if extendedFit == 'w' {
 		return WorstFitLogicPart(logicPartition, path, whereToStart, partitionSize, extendedName)
 	}
+	return false
 }
 
 func FirstFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extendedName [16]byte) bool {
 	temp := datos.EBR{}
+	totalSize := 0
+	totalSize += int(logicPartition.Part_size)
+	temp = ReadEBR(path, int64(whereToStart))
+	flag := true
+	for flag {
+		if temp.Part_size == 0 {
+			if partitionSize < int(logicPartition.Part_size) {
+				fmt.Println("la particion logica es mas grande que la extendida")
+				return false
+			}
+			logicPartition.Part_start = int64(whereToStart)
+			WriteEBR(logicPartition, path, int64(whereToStart))
+			flag = false
+		} else if temp.Part_status == '5' {
+			if temp.Part_size >= logicPartition.Part_size {
+				logicPartition.Part_start = temp.Part_start
+				logicPartition.Part_next = temp.Part_next
+				WriteEBR(logicPartition, path, temp.Part_start)
+				flag = false
+			}
+		} else if temp.Part_next == -1 {
+			totalSize += int(temp.Part_size)
+			if partitionSize < totalSize {
+				fmt.Println("el tamano de todas las particiones logicas unidas son mas grandes que la particion extendida, espacio insuficiente")
+				return false
+			}
+			temp.Part_next = temp.Part_start + temp.Part_size
+			logicPartition.Part_start = temp.Part_next
+			WriteEBR(&temp, path, temp.Part_start)
+			WriteEBR(logicPartition, path, temp.Part_next)
+			flag = false
+		} else {
+			totalSize += int(temp.Part_size)
+			temp = ReadEBR(path, temp.Part_next)
+		}
+	}
+	// aqui deberia ir un print a la consola
+	return true
+}
+
+func BestFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extededName [16]byte) bool {
+	var particionesLogicas []datos.EBR
+	temp := datos.EBR{}
+	totalSize := 0
+	totalSize += int(logicPartition.Part_size)
+	temp = ReadEBR(path, int64(whereToStart))
+	Wrote := false
+	flag := true
+	for flag {
+		if temp.Part_size == 0 {
+			if partitionSize < int(logicPartition.Part_size) {
+				fmt.Println("la particion logica es mas grande que la extendida")
+				return false
+			}
+			logicPartition.Part_start = int64(whereToStart)
+			WriteEBR(logicPartition, path, int64(whereToStart))
+			flag = false
+			Wrote = true
+		} else if temp.Part_status == '5' {
+			particionesLogicas = append(particionesLogicas, temp)
+		} else if temp.Part_next == -1 {
+			flag = false
+		} else {
+			totalSize += int(temp.Part_size)
+			temp = ReadEBR(path, temp.Part_next)
+		}
+	}
+	bestFit := 0
+	tempSize := 0
+	if len(particionesLogicas) != 0 {
+		for i, v := range particionesLogicas {
+			if tempSize != 0 {
+				bestFit = i
+			} else if tempSize > int(v.Part_size) && v.Part_size >= logicPartition.Part_size {
+				tempSize = int(v.Part_size)
+				bestFit = i
+			}
+		}
+		logicPartition.Part_start = particionesLogicas[bestFit].Part_start
+		logicPartition.Part_next = particionesLogicas[bestFit].Part_next
+		WriteEBR(logicPartition, path, logicPartition.Part_start)
+		Wrote = true
+	}
+	if !Wrote {
+		totalSize = int(logicPartition.Part_size)
+		temp = ReadEBR(path, int64(whereToStart))
+		flag2 := true
+		for flag2 {
+			if temp.Part_next == -1 {
+				totalSize += int(temp.Part_size)
+				if partitionSize < totalSize {
+					fmt.Println("el tamano de todas las particiones logicas unidas son mas grandes que la particion extendida, espacio insuficiente")
+					return false
+				}
+				temp.Part_next = temp.Part_start + temp.Part_size
+				logicPartition.Part_start = temp.Part_next
+				WriteEBR(&temp, path, temp.Part_start)
+				WriteEBR(logicPartition, path, temp.Part_next)
+				flag2 = false
+			} else {
+				totalSize += int(temp.Part_size)
+				temp = ReadEBR(path, temp.Part_next)
+			}
+		}
+	}
+	// aqui deberia ir un print a la consola
+	return true
+}
+
+func WorstFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extededName [16]byte) bool {
+	var particionesLogicas []datos.EBR
+	temp := datos.EBR{}
+	totalSize := 0
+	totalSize += int(logicPartition.Part_size)
+	temp = ReadEBR(path, int64(whereToStart))
+	Wrote := false
+	flag := true
+	for flag {
+		if temp.Part_size == 0 {
+			if partitionSize < int(logicPartition.Part_size) {
+				fmt.Println("la particion logica es mas grande que la extendida")
+				return false
+			}
+			logicPartition.Part_start = int64(whereToStart)
+			WriteEBR(logicPartition, path, int64(whereToStart))
+			flag = false
+			Wrote = true
+		} else if temp.Part_status == '5' {
+			particionesLogicas = append(particionesLogicas, temp)
+		} else if temp.Part_next == -1 {
+			flag = false
+		} else {
+			totalSize += int(temp.Part_size)
+			temp = ReadEBR(path, temp.Part_next)
+		}
+	}
+	worstFit := 0
+	tempSize := 0
+	if len(particionesLogicas) != 0 {
+		for i, v := range particionesLogicas {
+			if tempSize != 0 {
+				worstFit = i
+			} else if tempSize < int(v.Part_size) && v.Part_size >= logicPartition.Part_size {
+				tempSize = int(v.Part_size)
+				worstFit = i
+			}
+		}
+		logicPartition.Part_start = particionesLogicas[worstFit].Part_start
+		logicPartition.Part_next = particionesLogicas[worstFit].Part_next
+		WriteEBR(logicPartition, path, logicPartition.Part_start)
+		Wrote = true
+	}
+	if !Wrote {
+		totalSize = int(logicPartition.Part_size)
+		temp = ReadEBR(path, int64(whereToStart))
+		flag2 := true
+		for flag2 {
+			if temp.Part_next == -1 {
+				totalSize += int(temp.Part_size)
+				if partitionSize < totalSize {
+					fmt.Println("el tamano de todas las particiones logicas unidas son mas grandes que la particion extendida, espacio insuficiente")
+					return false
+				}
+				temp.Part_next = temp.Part_start + temp.Part_size
+				logicPartition.Part_start = temp.Part_next
+				WriteEBR(&temp, path, temp.Part_start)
+				WriteEBR(logicPartition, path, temp.Part_next)
+				flag2 = false
+			} else {
+				totalSize += int(temp.Part_size)
+				temp = ReadEBR(path, temp.Part_next)
+			}
+		}
+	}
+	// aqui deberia ir un print a la consola
 	return true
 }
 
