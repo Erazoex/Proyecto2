@@ -50,7 +50,7 @@ type SuperBloque struct {
 }
 
 // Contiene informacion sobre una tabla de inodo
-type tablaInodo struct {
+type TablaInodo struct {
 	I_uid   int64     // UID del usuario propietario del archivo o carpeta
 	I_gid   int64     // GID del grupo al que pertenece el archivo o carpeta
 	I_size  int64     // Tamano del archivo en bytes
@@ -70,7 +70,7 @@ type BloqueDeCarpetas struct {
 // Contiene informacion sobre el contenido de un archivo o carpeta
 type Content struct {
 	B_name  [12]byte // Nombre de la carpeta o archivo
-	B_inodo int64    // Apuntador hacia el inodo asociado al archivo o carpeta
+	B_inodo int32    // Apuntador hacia el inodo asociado al archivo o carpeta
 }
 
 // Contiene informacion sobre un bloque de archivos
