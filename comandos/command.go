@@ -13,6 +13,15 @@ import (
 
 // En este paquete se encuentran las funciones en comun
 // que se utilizan entre la mayoria de comandos.
+func FileExist(path string) bool {
+	fmt.Printf("-%s-\n", path)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	} else {
+		return true
+	}
+}
+
 func WriteMBR(master *datos.MBR, path string) {
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
@@ -41,7 +50,7 @@ func GetMBR(path string) datos.MBR {
 	var mbr datos.MBR
 	file, err := os.Open(path)
 	if err != nil {
-		fmt.Println("no se pudo abrir el archivo para obtener el MBR", err.Error())
+		fmt.Println("no se pudo abrir el archivo para obtener el MBR,", err.Error())
 		return mbr
 	}
 

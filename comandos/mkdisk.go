@@ -21,7 +21,7 @@ type Mkdisk struct {
 	params ParametrosMkdisk
 }
 
-func (m Mkdisk) Exe(parametros []string) {
+func (m *Mkdisk) Exe(parametros []string) {
 	m.params = m.SaveParams(parametros)
 	if m.Mkdisk(m.params.size, m.params.fit, m.params.unit, m.params.path) {
 		fmt.Printf("\nmkdisk realizado con exito para la ruta: %s\n\n", m.params.path)
@@ -30,10 +30,12 @@ func (m Mkdisk) Exe(parametros []string) {
 	}
 }
 
-func (m Mkdisk) SaveParams(parametros []string) ParametrosMkdisk {
+func (m *Mkdisk) SaveParams(parametros []string) ParametrosMkdisk {
 	// fmt.Println(parametros)
 	for _, v := range parametros {
 		// fmt.Println(v)
+		v = strings.TrimSpace(v)
+		v = strings.TrimRight(v, " ")
 		if strings.Contains(v, "path") {
 			v = strings.ReplaceAll(v, "path=", "")
 			v = strings.ReplaceAll(v, "\"", "")
@@ -59,7 +61,7 @@ func (m Mkdisk) SaveParams(parametros []string) ParametrosMkdisk {
 	return m.params
 }
 
-func (m Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
+func (m *Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
 	var fileSize = 0
 	var master datos.MBR
 	// Comprobando si existe una ruta valida para la creacion del disco
@@ -84,13 +86,15 @@ func (m Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
 		return false
 	}
 	// definiendo el tipo de fit que el disco tendra, como default sera First Fit
+	// fmt.Printf("tipo de la variable fit %T\n", fit)
+	// fmt.Println("el fit es:", fit)
 	if string(fit) == "bf" || string(fit) == "BF" {
 		master.Dsk_fit = 'b'
 	} else if string(fit) == "ff" || string(fit) == "FF" {
 		master.Dsk_fit = 'f'
 	} else if string(fit) == "wf" || string(fit) == "WF" {
 		master.Dsk_fit = 'w'
-	} else if string(fit) == "" {
+	} else if fit == 0 {
 		master.Dsk_fit = 'f'
 	} else {
 		fmt.Println("se debe ingresar un tipo de fit valido")
@@ -133,7 +137,7 @@ func FillPartitions(master *datos.MBR) {
 	for _, v := range master.Mbr_partitions {
 		v.Part_status = '0'
 		v.Part_fit = '0'
-		v.Part_start = -1
+		v.Part_start = 0
 		v.Part_size = 0
 		v.Part_type = '0'
 		copy(v.Part_name[:], "0")

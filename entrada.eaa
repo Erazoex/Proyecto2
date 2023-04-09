@@ -1,0 +1,16 @@
+mkdisk >size=500 >unit=k >path=/home/mia/pruebas/disco1.eaa
+mkdisk >size=500 >unit=k >path=/home/mia/pruebas/disco2.eaa
+rmdisk >path=/home/mia/pruebas/disco2.eaa
+fdisk >type=E >path=/home/mia/pruebas/disco1.eaa >name=Part1 >unit=k >size=200
+fdisk >type=P >path=/home/mia/pruebas/disco1.eaa >name=Part2 >unit=k >size=200
+# esta particion no deberia dejar imprimirla
+fdisk >type=P >path=/home/mia/pruebas/disco1.eaa >name=Part3 >unit=k >size=200
+fdisk >type=L >path=/home/mia/pruebas/disco1.eaa >name=LogicP1 >unit=k >size=50
+fdisk >type=L >path=/home/mia/pruebas/disco1.eaa >name=LogicP2 >unit=k >size=50
+fdisk >type=L >path=/home/mia/pruebas/disco1.eaa >name=LogicP3 >unit=k >size=50
+# aqui comienza el montaje
+mount >path=/home/mia/pruebas/disco1.eaa >name=LogicP1
+mount >path=/home/mia/pruebas/disco1.eaa >name=Part2
+# aqui va la parte de montar el sistema de archivos
+mkfs >id=531disco1
+mkfs >id=532disco1

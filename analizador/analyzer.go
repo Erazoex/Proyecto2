@@ -12,7 +12,7 @@ import (
 type Analyzer struct {
 }
 
-func (a Analyzer) Exe(input string) {
+func (a *Analyzer) Exe(input string) {
 	commandsAndParams := a.Split_input(input)
 	var command string
 	var params []string
@@ -26,7 +26,7 @@ func (a Analyzer) Exe(input string) {
 	a.MatchParams(command, params)
 }
 
-func (a Analyzer) MatchParams(command string, params []string) {
+func (a *Analyzer) MatchParams(command string, params []string) {
 	command = strings.Replace(command, " ", "", 1)
 	if command == "execute" {
 		for _, v := range params {
@@ -51,7 +51,8 @@ func (a Analyzer) MatchParams(command string, params []string) {
 		m := comandos.Mount{}
 		m.Exe(params)
 	} else if command == "mkfs" {
-		fmt.Println("")
+		m := comandos.Mkfs{}
+		m.Exe(params)
 	} else if command == "login" {
 		fmt.Println("")
 	} else if command == "logout" {
@@ -67,16 +68,21 @@ func (a Analyzer) MatchParams(command string, params []string) {
 	} else if command == "rep" {
 		fmt.Println("")
 	} else if strings.Contains(command, "#") {
+		fmt.Printf("%s", command)
+		for i := 0; i < len(params); i++ {
+			fmt.Printf("%s", params[i])
+		}
+		fmt.Println("")
 		fmt.Println("")
 	}
 }
 
-func (a Analyzer) Split_input(input string) []string {
+func (a *Analyzer) Split_input(input string) []string {
 	// fmt.Println("haciendo split al input")
 	return strings.Split(input, ">")
 }
 
-func (a Analyzer) Read(path string) {
+func (a *Analyzer) Read(path string) {
 	// aqui hay que leer el archivo y ejecutarlo
 	file, err := os.Open(path)
 	if err != nil {

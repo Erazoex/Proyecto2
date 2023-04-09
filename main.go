@@ -26,5 +26,4 @@ func main() {
 	}
 }
 
-// mkdisk >size=1 >unit=k >path=/home/mia/pruebas/disco1.eaa
-// rmdisk >path=/home/mia/pruebas/disco1.eaa
+// execute >path=./entrada.eaa

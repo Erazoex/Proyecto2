@@ -23,19 +23,21 @@ type Fdisk struct {
 	params ParametrosFdisk
 }
 
-func (f Fdisk) Exe(parametros []string) {
+func (f *Fdisk) Exe(parametros []string) {
 	f.params = f.SaveParams(parametros)
 	if f.Fdisk(f.params.name, f.params.path, f.params.size, f.params.unit, f.params.fit, f.params.type_p) {
-		fmt.Printf("\nfdisk realizado con exito para la ruta: %s\n\n", f.params.path)
+		fmt.Printf("\nfdisk realizado con exito para la ruta: %s y particion: %s\n\n", f.params.path, string(f.params.name[:]))
 	} else {
 		fmt.Printf("\n[ERROR!] no se logro realizar el comando fdisk para la ruta: %s\n\n", f.params.path)
 	}
 }
 
-func (f Fdisk) SaveParams(parametros []string) ParametrosFdisk {
+func (f *Fdisk) SaveParams(parametros []string) ParametrosFdisk {
 	// fmt.Println(parametros)
 	for _, v := range parametros {
 		// fmt.Println(v)
+		v = strings.TrimSpace(v)
+		v = strings.TrimRight(v, " ")
 		if strings.Contains(v, "path") {
 			v = strings.ReplaceAll(v, "path=", "")
 			v = strings.ReplaceAll(v, "\"", "")
@@ -75,14 +77,13 @@ func (f Fdisk) SaveParams(parametros []string) ParametrosFdisk {
 			}
 		} else if strings.Contains(v, "name") {
 			v = strings.ReplaceAll(v, "name=", "")
-			v = v[:16]
 			copy(f.params.name[:], v)
 		}
 	}
 	return f.params
 }
 
-func (f Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, t byte) bool {
+func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, t byte) bool {
 	if path == "" {
 		fmt.Println("no se encontro una ruta")
 		return false
@@ -97,7 +98,7 @@ func (f Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, 
 		fileSize = size * 1024
 	} else if unit == 'm' || unit == 'M' {
 		fileSize = size * 1024 * 1024
-	} else if unit == ' ' {
+	} else if unit == 0 {
 		fileSize = size * 1024
 	} else {
 		fmt.Println("debe ingresar una letra de tamano correcta")
@@ -105,7 +106,7 @@ func (f Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, 
 	}
 	// se debe comprobar que no exista ninguna particion con el mismo nombre
 	if ExisteParticion(&master, name) {
-		fmt.Printf("ya existe una particion con nombre: \"%v\"\n", name)
+		fmt.Printf("ya existe una particion con nombre: \"%s\"\n", string(name[:]))
 		return false
 	}
 	// comprobando el tamano de la particion, este debe ser mayor que cero
@@ -120,21 +121,21 @@ func (f Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, 
 		newPartition.Part_fit = 'b'
 	} else if fit == 'f' || fit == 'F' {
 		newPartition.Part_fit = 'f'
-	} else if fit == ' ' {
+	} else if fit == 0 {
 		newPartition.Part_fit = 'w'
 	} else {
 		fmt.Println("se debe ingresar un tipo de fit valido")
 		return false
 	}
-
 	// verificando que el tamano de la particion a crear sea menor
 	// o igual que el tamano que queda en el disco.
-	totalSize := unsafe.Sizeof(datos.MBR{})
+	totalSize := int(unsafe.Sizeof(datos.MBR{}))
 	for _, v := range master.Mbr_partitions {
 		if v.Part_status == '1' {
-			totalSize += uintptr(v.Part_start)
+			totalSize += int(v.Part_size)
 		}
 	}
+	// fmt.Println("espacio disponible, espacio a utilizar:", int(master.Mbr_tamano)-totalSize, fileSize)
 	if t != 'l' && t != 'L' {
 		if fileSize > int(master.Mbr_tamano)-int(totalSize) {
 			fmt.Println("el tamano de la particion es mas grande que el disco")
@@ -143,7 +144,7 @@ func (f Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, 
 	}
 
 	// indicando el tipo de particion
-	if t == ' ' {
+	if t == 0 {
 		t = 'p'
 	} else if t != 'p' && t != 'e' && t != 'l' && t != 'P' && t != 'E' && t != 'L' {
 		fmt.Printf("el tipo de la particion no es valido: \"%c\"\n", t)
@@ -175,7 +176,7 @@ func (f Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, 
 	existeParticionLibre := false
 	if t != 'l' && t != 'L' {
 		for _, v := range master.Mbr_partitions {
-			if v.Part_status == '0' {
+			if v.Part_status == 0 {
 				existeParticionLibre = true
 			}
 		}
@@ -216,7 +217,7 @@ func (f Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, 
 	return true
 }
 
-func (f Fdisk) CreatePrimaryPartition(master *datos.MBR, newPartition datos.Partition) {
+func (f *Fdisk) CreatePrimaryPartition(master *datos.MBR, newPartition datos.Partition) {
 	// Asignacion de que particion es la que se utilizara
 	if master.Dsk_fit == 'b' {
 		BestFit(master, &newPartition)
@@ -242,7 +243,7 @@ func (f Fdisk) CreateExtendedPartition(master *datos.MBR, newPartition datos.Par
 	temp.Part_start = newPartition.Part_start
 	temp.Part_size = 0
 	temp.Part_next = -1
-	copy(temp.Part_name[:], "")
+	copy(temp.Part_name[:], "vacio")
 	WriteEBR(&temp, path, newPartition.Part_start)
 }
 
@@ -269,7 +270,7 @@ func BestFit(master *datos.MBR, newPartition *datos.Partition) {
 	}
 	if !encontroParticion {
 		for i, v := range master.Mbr_partitions {
-			if v.Part_start == -1 {
+			if v.Part_start == 0 {
 				bestFit = i
 				break
 			}
@@ -278,9 +279,10 @@ func BestFit(master *datos.MBR, newPartition *datos.Partition) {
 	master.Mbr_partitions[bestFit] = *newPartition
 	if bestFit == 0 {
 		master.Mbr_partitions[bestFit].Part_start = int64(unsafe.Sizeof(datos.MBR{}))
-
+		newPartition.Part_start = int64(unsafe.Sizeof(datos.MBR{}))
 	} else {
 		master.Mbr_partitions[bestFit].Part_start = master.Mbr_partitions[bestFit-1].Part_start + master.Mbr_partitions[bestFit-1].Part_size
+		newPartition.Part_start = master.Mbr_partitions[bestFit-1].Part_start + master.Mbr_partitions[bestFit-1].Part_size
 	}
 }
 
@@ -299,7 +301,8 @@ func WorstFit(master *datos.MBR, newPartition *datos.Partition) {
 	}
 	if !encontroParticion {
 		for i, v := range master.Mbr_partitions {
-			if v.Part_start == -1 {
+			fmt.Println(v.Part_start)
+			if v.Part_start == 0 {
 				worstFit = i
 				break
 			}
@@ -308,15 +311,17 @@ func WorstFit(master *datos.MBR, newPartition *datos.Partition) {
 	master.Mbr_partitions[worstFit] = *newPartition
 	if worstFit == 0 {
 		master.Mbr_partitions[worstFit].Part_start = int64(unsafe.Sizeof(datos.MBR{}))
+		newPartition.Part_start = int64(unsafe.Sizeof(datos.MBR{}))
 	} else {
 		master.Mbr_partitions[worstFit].Part_start = master.Mbr_partitions[worstFit-1].Part_start + master.Mbr_partitions[worstFit-1].Part_size
+		newPartition.Part_start = master.Mbr_partitions[worstFit-1].Part_start + master.Mbr_partitions[worstFit-1].Part_size
 	}
 }
 
 func FirstFit(master *datos.MBR, newPartition *datos.Partition) {
 	firstFit := 0
 	for i, v := range master.Mbr_partitions {
-		if v.Part_status == '5' && v.Part_size >= newPartition.Part_size || v.Part_start == -1 {
+		if v.Part_status == '5' && v.Part_size >= newPartition.Part_size || v.Part_start == 0 {
 			firstFit = i
 			break
 		}
@@ -324,12 +329,14 @@ func FirstFit(master *datos.MBR, newPartition *datos.Partition) {
 	master.Mbr_partitions[firstFit] = *newPartition
 	if firstFit == 0 {
 		master.Mbr_partitions[firstFit].Part_start = int64(unsafe.Sizeof(datos.MBR{}))
+		newPartition.Part_start = int64(unsafe.Sizeof(datos.MBR{}))
 	} else {
 		master.Mbr_partitions[firstFit].Part_start = master.Mbr_partitions[firstFit-1].Part_start + master.Mbr_partitions[firstFit-1].Part_size
+		newPartition.Part_start = master.Mbr_partitions[firstFit-1].Part_start + master.Mbr_partitions[firstFit-1].Part_size
 	}
 }
 
-func (f Fdisk) CreateLogicPartition(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extendedFit byte, extendedName [16]byte) bool {
+func (f *Fdisk) CreateLogicPartition(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extendedFit byte, extendedName [16]byte) bool {
 	if extendedFit == 'f' {
 		return FirstFitLogicPart(logicPartition, path, whereToStart, partitionSize, extendedName)
 	} else if extendedFit == 'b' {

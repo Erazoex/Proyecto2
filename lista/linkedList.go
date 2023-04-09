@@ -1,6 +1,7 @@
 package lista
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -15,7 +16,7 @@ type MountNode struct {
 	Next, Prev  *MountNode
 }
 
-func (m MountNode) MountNode(ruta string, digits int, pos int, value *datos.Partition, valueL *datos.EBR) {
+func (m *MountNode) MountNode(ruta string, digits int, pos int, value *datos.Partition, valueL *datos.EBR) {
 	m.Ruta = ruta
 	m.Digits = digits
 	m.Pos = pos
@@ -26,24 +27,24 @@ func (m MountNode) MountNode(ruta string, digits int, pos int, value *datos.Part
 	m.CreateKey()
 }
 
-func (m MountNode) CreateKey() {
+func (m *MountNode) CreateKey() string {
 	directory := strings.Split(m.Ruta, "/")
 	lastPart := directory[len(directory)-1]
 	fileNameParts := strings.Split(lastPart, ".")
 	filename := fileNameParts[0]
-	m.Key = strconv.Itoa(m.Digits) + strconv.Itoa(m.Pos) + filename
+	return strconv.Itoa(m.Digits) + strconv.Itoa(m.Pos) + filename
 }
 
 type MountList struct {
-	first, last *MountNode
-	tamano      int
+	First, Last *MountNode
+	Tamano      int
 }
 
-func (m MountList) IsEmpty() bool {
-	return m.first == nil
+func (m *MountList) IsEmpty() bool {
+	return m.First == nil
 }
 
-func (m MountList) Mount(path string, digit int, part *datos.Partition, partL *datos.EBR) {
+func (m *MountList) Mount(path string, digit int, part *datos.Partition, partL *datos.EBR) {
 	newNode := &MountNode{
 		Ruta:   path,
 		Key:    "",
@@ -52,35 +53,40 @@ func (m MountList) Mount(path string, digit int, part *datos.Partition, partL *d
 		Value:  part,
 		ValueL: partL,
 	}
+	newNode.Key = newNode.CreateKey()
+	// fmt.Println(m.IsEmpty())
 	if !m.IsEmpty() {
-		m.last.Next = newNode
-		newNode.Prev = m.last
-		m.last = newNode
-		m.tamano++
+		m.Last.Next = newNode
+		newNode.Prev = m.Last
+		m.Last = newNode
+		m.Tamano++
 	} else {
-		m.first = newNode
-		m.last = newNode
-		m.tamano++
+		m.First = newNode
+		m.First.Next = nil
+		m.Last = newNode
+		m.Last.Next = nil
+		m.Tamano++
 	}
 	// deberia crear un m.PrintId o guardar en un singleton la consola
+	m.GetId(newNode)
 }
 
-func (m MountList) UnMount(key_ string) *MountNode {
+func (m *MountList) UnMount(key_ string) *MountNode {
 	if !m.IsEmpty() {
-		temp := m.first
+		temp := m.First
 		counter := 0
 		for counter < m.GetSize() {
 			if key_ == temp.Key {
-				if temp == m.first {
-					m.first = m.first.Next
-				} else if temp == m.last {
-					m.last = m.last.Prev
-					m.last.Next = nil
+				if temp == m.First {
+					m.First = m.First.Next
+				} else if temp == m.Last {
+					m.Last = m.Last.Prev
+					m.Last.Next = nil
 				} else {
 					temp.Prev.Next = temp.Next
 					temp.Next.Prev = temp.Prev
 				}
-				m.tamano--
+				m.Tamano--
 				return temp
 			}
 		}
@@ -88,9 +94,9 @@ func (m MountList) UnMount(key_ string) *MountNode {
 	return nil
 }
 
-func (m MountList) GetNodeById(key_ string) *MountNode {
+func (m *MountList) GetNodeById(key_ string) *MountNode {
 	if !m.IsEmpty() {
-		temp := m.first
+		temp := m.First
 		for temp != nil {
 			if key_ == temp.Key {
 				return temp
@@ -101,9 +107,9 @@ func (m MountList) GetNodeById(key_ string) *MountNode {
 	return nil
 }
 
-func (m MountList) NodeExist(key_ string) bool {
+func (m *MountList) NodeExist(key_ string) bool {
 	if !m.IsEmpty() {
-		temp := m.first
+		temp := m.First
 		for temp != nil {
 			if key_ == temp.Key {
 				return true
@@ -114,11 +120,11 @@ func (m MountList) NodeExist(key_ string) bool {
 	return false
 }
 
-func (m MountList) CountPartitions(path string) int {
+func (m *MountList) CountPartitions(path string) int {
 	contador := 1
 	if !m.IsEmpty() {
 		var temp *MountNode
-		temp = m.first
+		temp = m.First
 		for temp != nil {
 			if path == temp.Ruta {
 				contador++
@@ -129,12 +135,27 @@ func (m MountList) CountPartitions(path string) int {
 	return contador
 }
 
-func (m MountList) GetSize() int {
-	return m.tamano
+func (m *MountList) GetSize() int {
+	return m.Tamano
+}
+
+func (m *MountList) GetId(node *MountNode) {
+	fmt.Println("Id:", node.Key)
+}
+
+func (m *MountList) PrintList() {
+	if !m.IsEmpty() {
+		temp := m.First
+		for temp != nil {
+			fmt.Println("key:", temp.Key)
+			fmt.Println("path:", temp.Ruta)
+			temp = temp.Next
+		}
+	}
 }
 
 var ListaMount = MountList{
-	first:  nil,
-	last:   nil,
-	tamano: 0,
+	First:  nil,
+	Last:   nil,
+	Tamano: 0,
 }

@@ -14,7 +14,7 @@ type Rmdisk struct {
 	params ParametrosRmdisk
 }
 
-func (r Rmdisk) Exe(parametros []string) {
+func (r *Rmdisk) Exe(parametros []string) {
 	r.params = r.SaveParams(parametros)
 	if r.Rmdisk(r.params.path) {
 		fmt.Printf("\nrmdisk realizado con exito para la ruta: %s\n\n", r.params.path)
@@ -23,10 +23,12 @@ func (r Rmdisk) Exe(parametros []string) {
 	}
 }
 
-func (r Rmdisk) SaveParams(parametros []string) ParametrosRmdisk {
+func (r *Rmdisk) SaveParams(parametros []string) ParametrosRmdisk {
 	// fmt.Println(parametros)
 	for _, v := range parametros {
 		// fmt.Println(v)
+		v = strings.TrimSpace(v)
+		v = strings.TrimRight(v, " ")
 		if strings.Contains(v, "path") {
 			v = strings.ReplaceAll(v, "path=", "")
 			v = strings.ReplaceAll(v, "\"", "")
@@ -36,7 +38,7 @@ func (r Rmdisk) SaveParams(parametros []string) ParametrosRmdisk {
 	return r.params
 }
 
-func (r Rmdisk) Rmdisk(path string) bool {
+func (r *Rmdisk) Rmdisk(path string) bool {
 	// Comprobando si existe una ruta valida para la creacion del disco
 	if path == "" {
 		fmt.Println("no se encontro una ruta", "path = \"\"")

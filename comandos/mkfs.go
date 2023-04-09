@@ -2,6 +2,7 @@ package comandos
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"time"
 	"unsafe"
@@ -19,7 +20,7 @@ type Mkfs struct {
 	params ParametrosMkfs
 }
 
-func (m Mkfs) Exe(parametros []string) {
+func (m *Mkfs) Exe(parametros []string) {
 	m.params = m.SaveParams(parametros)
 	if m.Mkfs(m.params.id, m.params.t) {
 		fmt.Printf("\nel formateo con EXT2 de la particion con id %s fue exitoso\n\n", m.params.id)
@@ -28,10 +29,12 @@ func (m Mkfs) Exe(parametros []string) {
 	}
 }
 
-func (m Mkfs) SaveParams(parametros []string) ParametrosMkfs {
+func (m *Mkfs) SaveParams(parametros []string) ParametrosMkfs {
 	// fmt.Println(parametros)
 	for _, v := range parametros {
 		// fmt.Println(v)
+		v = strings.TrimSpace(v)
+		v = strings.TrimRight(v, " ")
 		if strings.Contains(v, "id") {
 			v = strings.ReplaceAll(v, "id=", "")
 			v = strings.ReplaceAll(v, " ", "")
@@ -45,7 +48,7 @@ func (m Mkfs) SaveParams(parametros []string) ParametrosMkfs {
 	return m.params
 }
 
-func (m Mkfs) Mkfs(id string, t string) bool {
+func (m *Mkfs) Mkfs(id string, t string) bool {
 	// comprobando que id no este vacio
 	if id == "" {
 		fmt.Println("no se encontro el id entre los comandos")
@@ -61,6 +64,7 @@ func (m Mkfs) Mkfs(id string, t string) bool {
 	}
 	//creando nuestro nodo auxiliar
 	nodo := lista.ListaMount.GetNodeById(id)
+	// fmt.Println(nodo)
 	if nodo == nil {
 		fmt.Printf("el id %s no coincide con ninguna particion montada\n", id)
 		return false
@@ -69,7 +73,7 @@ func (m Mkfs) Mkfs(id string, t string) bool {
 	return true
 }
 
-func (m Mkfs) Ext2(nodo *lista.MountNode) {
+func (m *Mkfs) Ext2(nodo *lista.MountNode) {
 	whereToStart := 0
 	partSize := 0
 	if nodo.Value != nil {
@@ -79,12 +83,13 @@ func (m Mkfs) Ext2(nodo *lista.MountNode) {
 		whereToStart = int(nodo.ValueL.Part_start)
 		partSize = int(nodo.ValueL.Part_size)
 	}
-	n := ((partSize - int(unsafe.Sizeof(datos.SuperBloque{}))) / (4 + int(unsafe.Sizeof(datos.TablaInodo{})) + 3*int(unsafe.Sizeof(datos.BloqueDeArchivos{}))))
-	if n < 1 {
+	n := float64(float64(partSize-int(unsafe.Sizeof(datos.SuperBloque{}))) / float64(4+int(unsafe.Sizeof(datos.TablaInodo{}))+3*int(unsafe.Sizeof(datos.BloqueDeArchivos{}))))
+	// fmt.Println(math.Floor(n))
+	if math.Floor(n) < 1 {
 		fmt.Println("el tamano de la particion es mas pequeno que el sistema de archivos")
 		return
 	}
-	inodesQuantity := int64(n)
+	inodesQuantity := int64(math.Floor(n))
 	blocksQuantity := int64(3 * inodesQuantity)
 
 	// llenando la estructura del superbloque

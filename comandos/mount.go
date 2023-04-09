@@ -18,7 +18,7 @@ type Mount struct {
 	params ParametrosMount
 }
 
-func (m Mount) Exe(parametros []string) {
+func (m *Mount) Exe(parametros []string) {
 	m.params = m.SaveParams(parametros)
 	if m.Mount(m.params.path, m.params.name) {
 		fmt.Printf("\nparticion %s montada con exito\n\n", m.params.path)
@@ -27,24 +27,25 @@ func (m Mount) Exe(parametros []string) {
 	}
 }
 
-func (m Mount) SaveParams(parametros []string) ParametrosMount {
+func (m *Mount) SaveParams(parametros []string) ParametrosMount {
 	// fmt.Println(parametros)
 	for _, v := range parametros {
 		// fmt.Println(v)
+		v = strings.TrimSpace(v)
+		v = strings.TrimRight(v, " ")
 		if strings.Contains(v, "path") {
 			v = strings.ReplaceAll(v, "path=", "")
 			v = strings.ReplaceAll(v, "\"", "")
 			m.params.path = v
 		} else if strings.Contains(v, "name") {
 			v = strings.ReplaceAll(v, "name=", "")
-			v = v[:16]
-			copy(m.params.name[:], v)
+			copy(m.params.name[:], v[:])
 		}
 	}
 	return m.params
 }
 
-func (m Mount) Mount(path string, name [16]byte) bool {
+func (m *Mount) Mount(path string, name [16]byte) bool {
 	// comprobando que el parametro "path" sea diferente de ""
 	if path == "" {
 		fmt.Println("no se encontro una ruta")
@@ -73,6 +74,7 @@ func (m Mount) Mount(path string, name [16]byte) bool {
 			}
 			particion.Part_type = '2'
 			var part *datos.Partition = new(datos.Partition)
+			part = &particion
 			lista.ListaMount.Mount(path, 53, part, nil)
 			partitionMounted = true
 			// tener un metodo de MountList que agregue un texto a la consola
@@ -98,7 +100,7 @@ func (m Mount) Mount(path string, name [16]byte) bool {
 	return true
 }
 
-func (m Mount) MountParticionLogica(path string, whereToStart int, name [16]byte) {
+func (m *Mount) MountParticionLogica(path string, whereToStart int, name [16]byte) {
 	//TODO: aqui me quede toca seguir manana
 	logicPartitionMounted := false
 	temp := ReadEBR(path, int64(whereToStart))
@@ -107,6 +109,7 @@ func (m Mount) MountParticionLogica(path string, whereToStart int, name [16]byte
 		if bytes.Equal(temp.Part_name[:], name[:]) {
 			temp.Part_status = '2'
 			var partL *datos.EBR = new(datos.EBR)
+			partL = &temp
 			lista.ListaMount.Mount(path, 53, nil, partL)
 			logicPartitionMounted = true
 			flag = false
