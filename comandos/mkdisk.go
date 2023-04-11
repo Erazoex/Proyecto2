@@ -11,22 +11,22 @@ import (
 )
 
 type ParametrosMkdisk struct {
-	size int
-	fit  byte
-	unit byte
-	path string
+	Size int
+	Fit  byte
+	Unit byte
+	Path string
 }
 
 type Mkdisk struct {
-	params ParametrosMkdisk
+	Params ParametrosMkdisk
 }
 
 func (m *Mkdisk) Exe(parametros []string) {
-	m.params = m.SaveParams(parametros)
-	if m.Mkdisk(m.params.size, m.params.fit, m.params.unit, m.params.path) {
-		fmt.Printf("\nmkdisk realizado con exito para la ruta: %s\n\n", m.params.path)
+	m.Params = m.SaveParams(parametros)
+	if m.Mkdisk(m.Params.Size, m.Params.Fit, m.Params.Unit, m.Params.Path) {
+		fmt.Printf("\nmkdisk realizado con exito para la ruta: %s\n\n", m.Params.Path)
 	} else {
-		fmt.Printf("\n[ERROR!] no se logro realizar el comando mkdisk para la ruta: %s\n\n", m.params.path)
+		fmt.Printf("\n[ERROR!] no se logro realizar el comando mkdisk para la ruta: %s\n\n", m.Params.Path)
 	}
 }
 
@@ -39,7 +39,7 @@ func (m *Mkdisk) SaveParams(parametros []string) ParametrosMkdisk {
 		if strings.Contains(v, "path") {
 			v = strings.ReplaceAll(v, "path=", "")
 			v = strings.ReplaceAll(v, "\"", "")
-			m.params.path = v
+			m.Params.Path = v
 		} else if strings.Contains(v, "size") {
 			v = strings.ReplaceAll(v, "size=", "")
 			v = strings.ReplaceAll(v, " ", "")
@@ -47,18 +47,18 @@ func (m *Mkdisk) SaveParams(parametros []string) ParametrosMkdisk {
 			if err != nil {
 				fmt.Println("hubo un error al convertir a int", err.Error())
 			}
-			m.params.size = num
+			m.Params.Size = num
 		} else if strings.Contains(v, "unit") {
 			v = strings.ReplaceAll(v, "unit=", "")
 			v = strings.ReplaceAll(v, " ", "")
-			m.params.unit = v[0]
+			m.Params.Unit = v[0]
 		} else if strings.Contains(v, "fit") {
 			v = strings.ReplaceAll(v, "fit=", "")
 			v = strings.ReplaceAll(v, " ", "")
-			m.params.fit = v[0]
+			m.Params.Fit = v[0]
 		}
 	}
-	return m.params
+	return m.Params
 }
 
 func (m *Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {

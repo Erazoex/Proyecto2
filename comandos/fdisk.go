@@ -11,24 +11,24 @@ import (
 )
 
 type ParametrosFdisk struct {
-	size   int
-	unit   byte
-	path   string
-	type_p byte
-	fit    byte
-	name   [16]byte
+	Size int
+	Unit byte
+	Path string
+	Type byte
+	Fit  byte
+	Name [16]byte
 }
 
 type Fdisk struct {
-	params ParametrosFdisk
+	Params ParametrosFdisk
 }
 
 func (f *Fdisk) Exe(parametros []string) {
-	f.params = f.SaveParams(parametros)
-	if f.Fdisk(f.params.name, f.params.path, f.params.size, f.params.unit, f.params.fit, f.params.type_p) {
-		fmt.Printf("\nfdisk realizado con exito para la ruta: %s y particion: %s\n\n", f.params.path, string(f.params.name[:]))
+	f.Params = f.SaveParams(parametros)
+	if f.Fdisk(f.Params.Name, f.Params.Path, f.Params.Size, f.Params.Unit, f.Params.Fit, f.Params.Type) {
+		fmt.Printf("\nfdisk realizado con exito para la ruta: %s y particion: %s\n\n", f.Params.Path, string(f.Params.Name[:]))
 	} else {
-		fmt.Printf("\n[ERROR!] no se logro realizar el comando fdisk para la ruta: %s\n\n", f.params.path)
+		fmt.Printf("\n[ERROR!] no se logro realizar el comando fdisk para la ruta: %s\n\n", f.Params.Path)
 	}
 }
 
@@ -41,7 +41,7 @@ func (f *Fdisk) SaveParams(parametros []string) ParametrosFdisk {
 		if strings.Contains(v, "path") {
 			v = strings.ReplaceAll(v, "path=", "")
 			v = strings.ReplaceAll(v, "\"", "")
-			f.params.path = v
+			f.Params.Path = v
 		} else if strings.Contains(v, "size") {
 			v = strings.ReplaceAll(v, "size=", "")
 			v = strings.ReplaceAll(v, " ", "")
@@ -49,38 +49,38 @@ func (f *Fdisk) SaveParams(parametros []string) ParametrosFdisk {
 			if err != nil {
 				fmt.Println("hubo un error al convertir a int", err.Error())
 			}
-			f.params.size = num
+			f.Params.Size = num
 		} else if strings.Contains(v, "unit") {
 			v = strings.ReplaceAll(v, "unit=", "")
 			v = strings.ReplaceAll(v, " ", "")
 			if v == "" {
-				f.params.unit = ' '
+				f.Params.Unit = ' '
 			} else {
-				f.params.unit = v[0]
+				f.Params.Unit = v[0]
 			}
 		} else if strings.Contains(v, "fit") {
 			v = strings.ReplaceAll(v, "fit=", "")
 			v = strings.ReplaceAll(v, " ", "")
 			if v == "" {
-				f.params.fit = ' '
+				f.Params.Fit = ' '
 			} else {
-				f.params.fit = v[0]
+				f.Params.Fit = v[0]
 			}
 
 		} else if strings.Contains(v, "type") {
 			v = strings.ReplaceAll(v, "type=", "")
 			v = strings.ReplaceAll(v, " ", "")
 			if v == "" {
-				f.params.type_p = ' '
+				f.Params.Type = ' '
 			} else {
-				f.params.type_p = v[0]
+				f.Params.Type = v[0]
 			}
 		} else if strings.Contains(v, "name") {
 			v = strings.ReplaceAll(v, "name=", "")
-			copy(f.params.name[:], v)
+			copy(f.Params.Name[:], v)
 		}
 	}
-	return f.params
+	return f.Params
 }
 
 func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, t byte) bool {

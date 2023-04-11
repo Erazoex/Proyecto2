@@ -12,20 +12,20 @@ import (
 )
 
 type ParametrosMkfs struct {
-	id string
-	t  string
+	Id string
+	T  string
 }
 
 type Mkfs struct {
-	params ParametrosMkfs
+	Params ParametrosMkfs
 }
 
 func (m *Mkfs) Exe(parametros []string) {
-	m.params = m.SaveParams(parametros)
-	if m.Mkfs(m.params.id, m.params.t) {
-		fmt.Printf("\nel formateo con EXT2 de la particion con id %s fue exitoso\n\n", m.params.id)
+	m.Params = m.SaveParams(parametros)
+	if m.Mkfs(m.Params.Id, m.Params.T) {
+		fmt.Printf("\nel formateo con EXT2 de la particion con id %s fue exitoso\n\n", m.Params.Id)
 	} else {
-		fmt.Printf("no se logro formatear la particion con id %s\n", m.params.id)
+		fmt.Printf("no se logro formatear la particion con id %s\n", m.Params.Id)
 	}
 }
 
@@ -38,14 +38,14 @@ func (m *Mkfs) SaveParams(parametros []string) ParametrosMkfs {
 		if strings.Contains(v, "id") {
 			v = strings.ReplaceAll(v, "id=", "")
 			v = strings.ReplaceAll(v, " ", "")
-			m.params.id = v
+			m.Params.Id = v
 		} else if strings.Contains(v, "type") {
 			v = strings.ReplaceAll(v, "type=", "")
 			v = strings.ReplaceAll(v, " ", "")
-			m.params.t = v
+			m.Params.T = v
 		}
 	}
-	return m.params
+	return m.Params
 }
 
 func (m *Mkfs) Mkfs(id string, t string) bool {
@@ -81,7 +81,7 @@ func (m *Mkfs) Ext2(nodo *lista.MountNode) {
 		partSize = int(nodo.Value.Part_size)
 	} else if nodo.ValueL != nil {
 		whereToStart = int(nodo.ValueL.Part_start)
-		partSize = int(nodo.ValueL.Part_size)
+		partSize = int(nodo.ValueL.Part_size) + int(unsafe.Sizeof(datos.EBR{}))
 	}
 	n := float64(float64(partSize-int(unsafe.Sizeof(datos.SuperBloque{}))) / float64(4+int(unsafe.Sizeof(datos.TablaInodo{}))+3*int(unsafe.Sizeof(datos.BloqueDeArchivos{}))))
 	// fmt.Println(math.Floor(n))
@@ -97,7 +97,7 @@ func (m *Mkfs) Ext2(nodo *lista.MountNode) {
 		S_filesystem_type:   2,
 		S_inodes_count:      inodesQuantity,
 		S_blocks_count:      blocksQuantity,
-		S_free_inodes_count: inodesQuantity,
+		S_free_inodes_count: inodesQuantity - 2,
 		S_free_blocks_count: blocksQuantity - 2,
 		S_mnt_count:         0,
 		S_magic:             0xEF53,

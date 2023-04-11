@@ -7,19 +7,19 @@ import (
 )
 
 type ParametrosRmdisk struct {
-	path string
+	Path string
 }
 
 type Rmdisk struct {
-	params ParametrosRmdisk
+	Params ParametrosRmdisk
 }
 
 func (r *Rmdisk) Exe(parametros []string) {
-	r.params = r.SaveParams(parametros)
-	if r.Rmdisk(r.params.path) {
-		fmt.Printf("\nrmdisk realizado con exito para la ruta: %s\n\n", r.params.path)
+	r.Params = r.SaveParams(parametros)
+	if r.Rmdisk(r.Params.Path) {
+		fmt.Printf("\nrmdisk realizado con exito para la ruta: %s\n\n", r.Params.Path)
 	} else {
-		fmt.Printf("\n[ERROR!] no se logro realizar el comando rmdisk para la ruta: %s\n\n", r.params.path)
+		fmt.Printf("\n[ERROR!] no se logro realizar el comando rmdisk para la ruta: %s\n\n", r.Params.Path)
 	}
 }
 
@@ -32,10 +32,10 @@ func (r *Rmdisk) SaveParams(parametros []string) ParametrosRmdisk {
 		if strings.Contains(v, "path") {
 			v = strings.ReplaceAll(v, "path=", "")
 			v = strings.ReplaceAll(v, "\"", "")
-			r.params.path = v
+			r.Params.Path = v
 		}
 	}
-	return r.params
+	return r.Params
 }
 
 func (r *Rmdisk) Rmdisk(path string) bool {

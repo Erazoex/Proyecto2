@@ -134,7 +134,7 @@ func Fwrite(estructura interface{}, path string, position int64) {
 		fmt.Println("no se pudo abrir el archivo para escribir la estructura", err.Error())
 		return
 	}
-	// Posicionandonos en el principio del archivo
+	// Posicionandonos en donde necesitamos dentro del archivo
 	_, err = file.Seek(position, 0)
 	if err != nil {
 		fmt.Println("no se pudo posicionar en donde se desea:", position, err.Error())
@@ -148,5 +148,26 @@ func Fwrite(estructura interface{}, path string, position int64) {
 		return
 	}
 	// fmt.Println("se escribio correctamente! :D")
+	defer file.Close()
+}
+
+func Fread(estructura interface{}, path string, position int64) {
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Println("no se pudo abrir el archivo para escrdibir la estructura", err.Error())
+		return
+	}
+	// Posicionandonos en donde necesitamos dentro del archivo
+	_, err = file.Seek(position, 0)
+	if err != nil {
+		fmt.Println("no se pudo posicion en donde es desea:", position, err.Error())
+		return
+	}
+	// Leyendo La estructura
+	err = binary.Read(file, binary.LittleEndian, estructura)
+	if err != nil {
+		fmt.Println("no se pudo escribir la estructura,", err.Error())
+		return
+	}
 	defer file.Close()
 }

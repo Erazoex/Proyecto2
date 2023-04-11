@@ -10,20 +10,20 @@ import (
 )
 
 type ParametrosMount struct {
-	path string
-	name [16]byte
+	Path string
+	Name [16]byte
 }
 
 type Mount struct {
-	params ParametrosMount
+	Params ParametrosMount
 }
 
 func (m *Mount) Exe(parametros []string) {
-	m.params = m.SaveParams(parametros)
-	if m.Mount(m.params.path, m.params.name) {
-		fmt.Printf("\nparticion %s montada con exito\n\n", m.params.path)
+	m.Params = m.SaveParams(parametros)
+	if m.Mount(m.Params.Path, m.Params.Name) {
+		fmt.Printf("\nparticion %s montada con exito\n\n", m.Params.Path)
 	} else {
-		fmt.Printf("no se logro montar la particion %s\n", m.params.path)
+		fmt.Printf("no se logro montar la particion %s\n", m.Params.Path)
 	}
 }
 
@@ -36,13 +36,13 @@ func (m *Mount) SaveParams(parametros []string) ParametrosMount {
 		if strings.Contains(v, "path") {
 			v = strings.ReplaceAll(v, "path=", "")
 			v = strings.ReplaceAll(v, "\"", "")
-			m.params.path = v
+			m.Params.Path = v
 		} else if strings.Contains(v, "name") {
 			v = strings.ReplaceAll(v, "name=", "")
-			copy(m.params.name[:], v[:])
+			copy(m.Params.Name[:], v[:])
 		}
 	}
-	return m.params
+	return m.Params
 }
 
 func (m *Mount) Mount(path string, name [16]byte) bool {
