@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/erazoex/proyecto2/comandos"
+	"github.com/erazoex/proyecto2/comandos/usuariosygrupos"
 )
 
 type Analyzer struct {
@@ -54,13 +55,17 @@ func (a *Analyzer) MatchParams(command string, params []string) {
 		m := comandos.Mkfs{}
 		m.Exe(params)
 	} else if command == "login" {
-		fmt.Println("")
+		l := usuariosygrupos.Login{}
+		l.Exe(params)
 	} else if command == "logout" {
-		fmt.Println("")
+		l := usuariosygrupos.Logout{}
+		l.Exe(params)
 	} else if command == "mkgrp" {
-		fmt.Println("")
+		m := usuariosygrupos.Mkgrp{}
+		m.Exe(params)
 	} else if command == "rmgrp" {
-		fmt.Println("")
+		r := usuariosygrupos.Rmgrp{}
+		r.Exe(params)
 	} else if command == "mkuser" {
 		fmt.Println("")
 	} else if command == "rmuser" {

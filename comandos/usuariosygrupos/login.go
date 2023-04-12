@@ -8,6 +8,7 @@ import (
 
 	"github.com/erazoex/proyecto2/comandos"
 	"github.com/erazoex/proyecto2/datos"
+	"github.com/erazoex/proyecto2/functions"
 	"github.com/erazoex/proyecto2/lista"
 	"github.com/erazoex/proyecto2/logger"
 )
@@ -65,11 +66,6 @@ func (l *Login) Login(User [10]byte, Pwd [10]byte, Id string) bool {
 		fmt.Println("no hay id para buscar en las particiones montadas")
 		return false
 	}
-	if !logger.Log.IsLoggedIn() {
-		username := logger.Log.GetUserName()
-		fmt.Printf("se tiene que desloggear del usuario %s antes de hacer login con otro usuario", string(username[:]))
-		return false
-	}
 
 	node := lista.ListaMount.GetNodeById(Id)
 	if node == nil {
@@ -117,12 +113,13 @@ func (l *Login) LoginInPrimaryPartition(path string, User [10]byte, Pwd [10]byte
 		grupo := parametros[2]
 		username := parametros[3]
 		password := parametros[4]
-		if !bytes.Equal([]byte(username), User[:]) || !bytes.Equal([]byte(password), Pwd[:]) {
+		if !functions.Equal(User, username) || !functions.Equal(Pwd, password) {
 			continue
 		}
 		user := &logger.User{
 			User: User,
 			Pass: Pwd,
+			Id:   Id,
 		}
 		copy(user.Grupo[:], grupo)
 		return logger.Log.Login(user)
@@ -143,6 +140,7 @@ func (l *Login) LoginInLogicPartition(path string, User [10]byte, Pwd [10]byte, 
 	// vamos a recorrer la tabla de inodos del archivo Users.Txt
 	var contenido string
 	for i := 0; i < len(tablaInodo.I_block); i++ {
+		// fmt.Println(tablaInodo.I_block[i])
 		if tablaInodo.I_block[i] == -1 {
 			continue
 		}
@@ -160,7 +158,7 @@ func (l *Login) LoginInLogicPartition(path string, User [10]byte, Pwd [10]byte, 
 		grupo := parametros[2]
 		username := parametros[3]
 		password := parametros[4]
-		if !bytes.Equal([]byte(username), User[:]) || !bytes.Equal([]byte(password), Pwd[:]) {
+		if !functions.Equal(User, username) || !functions.Equal(Pwd, password) {
 			continue
 		}
 		user := &logger.User{

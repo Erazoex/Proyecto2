@@ -1,13 +1,22 @@
 package logger
 
 import (
-	"bytes"
 	"fmt"
+
+	"github.com/erazoex/proyecto2/functions"
 )
 
 type User struct {
 	Grupo, User, Pass [10]byte
 	Id                string
+}
+
+func (u *User) GetName() [10]byte {
+	return u.User
+}
+
+func (u *User) GetId() string {
+	return u.Id
 }
 
 type Logger struct {
@@ -29,19 +38,24 @@ func (l *Logger) IsLoggedIn() bool {
 }
 
 func (l *Logger) Logout() bool {
-	if !l.IsLoggedIn() {
+	if l.IsLoggedIn() {
 		l.Usr = nil
+		return true
 	}
 	fmt.Println("no habia un usuario loggeado")
 	return false
 }
 
 func (l *Logger) UserIsRoot() bool {
-	return bytes.Equal(l.Usr.User[:], []byte("root"))
+	return functions.Equal(l.Usr.GetName(), "root")
 }
 
 func (l *Logger) GetUserName() [10]byte {
-	return l.Usr.User
+	return l.Usr.GetName()
+}
+
+func (l *Logger) GetUserId() string {
+	return l.Usr.GetId()
 }
 
 var Log = Logger{

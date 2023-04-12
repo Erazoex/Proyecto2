@@ -9,9 +9,9 @@ import (
 	"github.com/erazoex/proyecto2/datos"
 )
 
-func WriteInBitmapInode(file *os.File, superbloque *datos.SuperBloque) int64 {
+func WriteInBitmapInode(path string, superbloque *datos.SuperBloque) int64 {
+	file := OpenNewFile(path)
 	valor := byte('1')
-	file.Seek(superbloque.S_bm_inode_start, 0)
 	position := superbloque.S_first_ino
 	if position == -1 {
 		fmt.Println("no se encontro posicion vacia, bitmap inode")
@@ -24,9 +24,9 @@ func WriteInBitmapInode(file *os.File, superbloque *datos.SuperBloque) int64 {
 	return position
 }
 
-func WriteInBitmapBlock(file *os.File, superbloque *datos.SuperBloque) int64 {
+func WriteInBitmapBlock(path string, superbloque *datos.SuperBloque) int64 {
+	file := OpenNewFile(path)
 	valor := byte('1')
-	file.Seek(superbloque.S_bm_block_start, 0)
 	position := superbloque.S_first_blo
 	if position == -1 {
 		fmt.Println("no se encontro posicion vacia, bitmap block")
@@ -41,7 +41,8 @@ func WriteInBitmapBlock(file *os.File, superbloque *datos.SuperBloque) int64 {
 
 // funciones para borrar en los bitmap de bloques
 
-func DeleteBitmapInode(file *os.File, superbloque *datos.SuperBloque, posicion int64) {
+func DeleteBitmapInode(path string, superbloque *datos.SuperBloque, posicion int64) {
+	file := OpenNewFile(path)
 	valor := byte('0')
 	file.Seek(superbloque.S_bm_inode_start+(posicion*int64(unsafe.Sizeof(valor))), 0)
 	FwriteByte(file, &valor)
@@ -49,7 +50,8 @@ func DeleteBitmapInode(file *os.File, superbloque *datos.SuperBloque, posicion i
 	superbloque.S_free_inodes_count++
 }
 
-func DeleteBitmapBlock(file *os.File, superbloque *datos.SuperBloque, posicion int64) {
+func DeleteBitmapBlock(path string, superbloque *datos.SuperBloque, posicion int64) {
+	file := OpenNewFile(path)
 	valor := byte('0')
 	file.Seek(superbloque.S_bm_block_start+(posicion*int64(unsafe.Sizeof(valor))), 0)
 	FwriteByte(file, &valor)
@@ -103,4 +105,14 @@ func FwriteByte(file *os.File, temp *byte) {
 	if err != nil {
 		fmt.Println("no se pudo escribir,", err.Error())
 	}
+}
+
+// abrir el archivo
+func OpenNewFile(path string) *os.File {
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Println("no se pudo abrir el archivo para Bitmap", err.Error())
+		return nil
+	}
+	return file
 }

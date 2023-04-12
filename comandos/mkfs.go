@@ -80,8 +80,8 @@ func (m *Mkfs) Ext2(nodo *lista.MountNode) {
 		whereToStart = int(nodo.Value.Part_start)
 		partSize = int(nodo.Value.Part_size)
 	} else if nodo.ValueL != nil {
-		whereToStart = int(nodo.ValueL.Part_start)
-		partSize = int(nodo.ValueL.Part_size) + int(unsafe.Sizeof(datos.EBR{}))
+		whereToStart = int(nodo.ValueL.Part_start) + int(unsafe.Sizeof(datos.EBR{}))
+		partSize = int(nodo.ValueL.Part_size)
 	}
 	n := float64(float64(partSize-int(unsafe.Sizeof(datos.SuperBloque{}))) / float64(4+int(unsafe.Sizeof(datos.TablaInodo{}))+3*int(unsafe.Sizeof(datos.BloqueDeArchivos{}))))
 	// fmt.Println(math.Floor(n))
@@ -211,11 +211,11 @@ func (m *Mkfs) Ext2(nodo *lista.MountNode) {
 		fileInodeTable.I_mtime[i] = mtime.String()[i]
 	}
 	// llenando a todos los bloques no utilizados
-	for i := 0; i < len(rootInodeTable.I_block); i++ {
-		rootInodeTable.I_block[i] = -1
+	for i := 0; i < len(fileInodeTable.I_block); i++ {
+		fileInodeTable.I_block[i] = -1
 	}
 	// apuntando al bloque 1 (primer bloque de archivos creado para users.txt)
-	rootInodeTable.I_block[0] = 1
+	fileInodeTable.I_block[0] = 1
 
 	// crear bloque de archivos y escribiendo el contenido
 	bloqueArchivos := datos.BloqueDeArchivos{}
