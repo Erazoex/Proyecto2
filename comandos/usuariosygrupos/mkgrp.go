@@ -37,7 +37,7 @@ func (m *Mkgrp) SaveParams(parametros []string) ParametrosMkgrp {
 		v = strings.TrimRight(v, " ")
 		v = strings.ReplaceAll(v, "\"", "")
 		if strings.Contains(v, "name") {
-			v = strings.ReplaceAll(v, "user=", "")
+			v = strings.ReplaceAll(v, "name=", "")
 			m.params.name = v
 		}
 	}
@@ -50,13 +50,9 @@ func (m *Mkgrp) Mkgrp(name string) bool {
 		return true
 	}
 	if logger.Log.IsLoggedIn() && logger.Log.UserIsRoot() {
-		fmt.Println("aqui entra")
-		fmt.Println(lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value != nil)
 		if lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value != nil {
-			fmt.Println("print")
 			return m.MkgrpPartition(name, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value.Part_start, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Ruta)
 		} else if lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value != nil {
-			fmt.Println("println")
 			return m.MkgrpPartition(name, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).ValueL.Part_start+int64(unsafe.Sizeof(datos.EBR{})), lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Ruta)
 		}
 	}
@@ -64,7 +60,6 @@ func (m *Mkgrp) Mkgrp(name string) bool {
 }
 
 func (m *Mkgrp) MkgrpPartition(name string, whereToStart int64, path string) bool {
-	fmt.Println("hola mundo!")
 	// superbloque de la particion
 	var superbloque datos.SuperBloque
 	comandos.Fread(&superbloque, path, whereToStart)
@@ -77,14 +72,18 @@ func (m *Mkgrp) MkgrpPartition(name string, whereToStart int64, path string) boo
 	for i := 0; i < len(tablaInodo.I_mtime); i++ {
 		tablaInodo.I_mtime[i] = mtime.String()[i]
 	}
-	if m.ExisteGrupo(ReadFile(&tablaInodo, path, &superbloque), name) {
+	if m.ExisteGrupo(ReadInode(&tablaInodo, path, &superbloque), name) {
 		fmt.Println("ya existe grupo con ese nombre", name)
 		return false
 	}
-	numero := m.ContarGrupos(ReadFile(&tablaInodo, path, &superbloque))
+	numero := m.ContarGrupos(ReadInode(&tablaInodo, path, &superbloque))
 	grupo := m.AgregarGrupo(numero, name)
-	fmt.Println(ReadFile(&tablaInodo, path, &superbloque))
-	return AppendFile(path, &superbloque, &tablaInodo, grupo)
+	if AppendFile(path, &superbloque, &tablaInodo, grupo) {
+		comandos.Fwrite(&tablaInodo, path, superbloque.S_inode_start+int64(unsafe.Sizeof(datos.TablaInodo{})))
+		fmt.Println(ReadInode(&tablaInodo, path, &superbloque))
+		return true
+	}
+	return false
 }
 
 func (m *Mkgrp) AgregarGrupo(groupNumber int, groupName string) string {
@@ -94,6 +93,7 @@ func (m *Mkgrp) AgregarGrupo(groupNumber int, groupName string) string {
 func (m *Mkgrp) ContarGrupos(contenido string) int {
 	contador := 1
 	lineas := strings.Split(contenido, "\n")
+	lineas = lineas[:len(lineas)-1]
 	for _, linea := range lineas {
 		parametros := strings.Split(linea, ",")
 		if parametros[1] != "G" {
@@ -105,12 +105,10 @@ func (m *Mkgrp) ContarGrupos(contenido string) int {
 }
 
 func (m *Mkgrp) ExisteGrupo(contenido string, groupName string) bool {
-	fmt.Println("imprimir-->", contenido)
-	fmt.Println("imprimir---", groupName)
 	lineas := strings.Split(contenido, "\n")
+	lineas = lineas[:len(lineas)-1]
 	for _, linea := range lineas {
 		parametros := strings.Split(linea, ",")
-		fmt.Println(parametros[1])
 		if parametros[1] != "G" {
 			continue
 		}

@@ -66,7 +66,7 @@ func (r *Rmgrp) RmgrpPartition(name string, whereToStart int64, path string) boo
 	for i := 0; i < len(tablaInodo.I_mtime); i++ {
 		tablaInodo.I_mtime[i] = mtime.String()[i]
 	}
-	if !r.ExisteGrupo(ReadFile(&tablaInodo, path, &superbloque), name) {
+	if !r.ExisteGrupo(ReadInode(&tablaInodo, path, &superbloque), name) {
 		fmt.Println("no existe grupo con ese nombre", name)
 		return false
 	}

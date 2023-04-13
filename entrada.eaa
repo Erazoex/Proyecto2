@@ -16,5 +16,4 @@ mkfs >id=531disco1
 mkfs >id=532disco1
 login >user=root >pwd=123 >id=532disco1
 mkgrp >name="grupo 1"
-mkgrp >name=valorant
-rmgrp >name="grupo 1"
+mkgrp >name=admins
