@@ -14,7 +14,7 @@ import (
 )
 
 type ParametrosMkgrp struct {
-	name string
+	Name string
 }
 
 type Mkgrp struct {
@@ -23,10 +23,10 @@ type Mkgrp struct {
 
 func (m *Mkgrp) Exe(parametros []string) {
 	m.params = m.SaveParams(parametros)
-	if m.Mkgrp(m.params.name) {
-		fmt.Printf("\ngrupo \"%s\" creado con exito\n\n", m.params.name)
+	if m.Mkgrp(m.params.Name) {
+		fmt.Printf("\ngrupo \"%s\" creado con exito\n\n", m.params.Name)
 	} else {
-		fmt.Printf("no se logro crear el grupo \"%s\"\n\n", m.params.name)
+		fmt.Printf("no se logro crear el grupo \"%s\"\n\n", m.params.Name)
 	}
 }
 
@@ -38,7 +38,7 @@ func (m *Mkgrp) SaveParams(parametros []string) ParametrosMkgrp {
 		v = strings.ReplaceAll(v, "\"", "")
 		if strings.Contains(v, "name") {
 			v = strings.ReplaceAll(v, "name=", "")
-			m.params.name = v
+			m.params.Name = v
 		}
 	}
 	return m.params
@@ -72,15 +72,15 @@ func (m *Mkgrp) MkgrpPartition(name string, whereToStart int64, path string) boo
 	for i := 0; i < len(tablaInodo.I_mtime); i++ {
 		tablaInodo.I_mtime[i] = mtime.String()[i]
 	}
-	if m.ExisteGrupo(ReadInode(&tablaInodo, path, &superbloque), name) {
+	if m.ExisteGrupo(ReadFile(&tablaInodo, path, &superbloque), name) {
 		fmt.Println("ya existe grupo con ese nombre", name)
 		return false
 	}
-	numero := m.ContarGrupos(ReadInode(&tablaInodo, path, &superbloque))
+	numero := m.ContarGrupos(ReadFile(&tablaInodo, path, &superbloque))
 	grupo := m.AgregarGrupo(numero, name)
 	if AppendFile(path, &superbloque, &tablaInodo, grupo) {
 		comandos.Fwrite(&tablaInodo, path, superbloque.S_inode_start+int64(unsafe.Sizeof(datos.TablaInodo{})))
-		fmt.Println(ReadInode(&tablaInodo, path, &superbloque))
+		fmt.Println(ReadFile(&tablaInodo, path, &superbloque))
 		return true
 	}
 	return false

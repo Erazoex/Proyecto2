@@ -13,7 +13,7 @@ import (
 )
 
 type ParametrosRmgrp struct {
-	name string
+	Name string
 }
 
 type Rmgrp struct {
@@ -22,6 +22,11 @@ type Rmgrp struct {
 
 func (r *Rmgrp) Exe(parametros []string) {
 	r.params = r.SaveParams(parametros)
+	if r.Rmgrp(r.params.Name) {
+		fmt.Printf("\ngrupo \"%s\" eliminado con exito\n\n", r.params.Name)
+	} else {
+		fmt.Printf("no se logro eliminar el grupo \"%s\"\n\n", r.params.Name)
+	}
 }
 
 func (r *Rmgrp) SaveParams(parametros []string) ParametrosRmgrp {
@@ -31,8 +36,8 @@ func (r *Rmgrp) SaveParams(parametros []string) ParametrosRmgrp {
 		v = strings.TrimRight(v, " ")
 		v = strings.ReplaceAll(v, "\"", "")
 		if strings.Contains(v, "name") {
-			v = strings.ReplaceAll(v, "user=", "")
-			r.params.name = v
+			v = strings.ReplaceAll(v, "name=", "")
+			r.params.Name = v
 		}
 	}
 	return r.params
@@ -66,19 +71,24 @@ func (r *Rmgrp) RmgrpPartition(name string, whereToStart int64, path string) boo
 	for i := 0; i < len(tablaInodo.I_mtime); i++ {
 		tablaInodo.I_mtime[i] = mtime.String()[i]
 	}
-	if !r.ExisteGrupo(ReadInode(&tablaInodo, path, &superbloque), name) {
+	if !r.ExisteGrupo(ReadFile(&tablaInodo, path, &superbloque), name) {
 		fmt.Println("no existe grupo con ese nombre", name)
 		return false
 	}
-	contenido := GetFile(&tablaInodo, path, &superbloque)
+	contenido := modFile(&tablaInodo, path, &superbloque)
 	nuevoContenido := r.DesactivarGrupo(contenido, name)
-	fmt.Println(nuevoContenido)
-	return SetFile(&tablaInodo, path, &superbloque, nuevoContenido)
+	// fmt.Println(nuevoContenido)
+	if SetFile(&tablaInodo, path, &superbloque, nuevoContenido) {
+		fmt.Println(ReadFile(&tablaInodo, path, &superbloque))
+		return true
+	}
+	return false
 }
 
 func (r *Rmgrp) DesactivarGrupo(contenido string, groupName string) string {
 	nuevoContenido := ""
 	lineas := strings.Split(contenido, "\n")
+	lineas = lineas[:len(lineas)-1]
 	for _, linea := range lineas {
 		parametros := strings.Split(linea, ",")
 		if parametros[1] == "G" {
@@ -95,6 +105,7 @@ func (r *Rmgrp) DesactivarGrupo(contenido string, groupName string) string {
 
 func (r *Rmgrp) ExisteGrupo(contenido string, groupName string) bool {
 	lineas := strings.Split(contenido, "\n")
+	lineas = lineas[:len(lineas)-1]
 	for _, linea := range lineas {
 		parametros := strings.Split(linea, ",")
 		if parametros[1] != "G" {
