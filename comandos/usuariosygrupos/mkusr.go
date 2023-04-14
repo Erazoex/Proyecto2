@@ -59,15 +59,15 @@ func (m *Mkusr) Mkusr(user string, pwd string, grp string) bool {
 	}
 	if logger.Log.IsLoggedIn() && logger.Log.UserIsRoot() {
 		if lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value != nil {
-			return m.MkgrpPartition(user, pwd, grp, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value.Part_start, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Ruta)
+			return m.MkusrPartition(user, pwd, grp, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value.Part_start, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Ruta)
 		} else if lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value != nil {
-			return m.MkgrpPartition(user, pwd, grp, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).ValueL.Part_start+int64(unsafe.Sizeof(datos.EBR{})), lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Ruta)
+			return m.MkusrPartition(user, pwd, grp, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).ValueL.Part_start+int64(unsafe.Sizeof(datos.EBR{})), lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Ruta)
 		}
 	}
 	return false
 }
 
-func (m *Mkusr) MkgrpPartition(user string, pwd string, grp string, whereToStart int64, path string) bool {
+func (m *Mkusr) MkusrPartition(user string, pwd string, grp string, whereToStart int64, path string) bool {
 	// superbloque de la particion
 	var superbloque datos.SuperBloque
 	comandos.Fread(&superbloque, path, whereToStart)
@@ -120,11 +120,12 @@ func (m *Mkusr) ExisteUsuario(contenido string, userName string) bool {
 	lineas := strings.Split(contenido, "\n")
 	lineas = lineas[:len(lineas)-1]
 	for _, linea := range lineas {
+		linea = strings.ReplaceAll(linea, "\x00", "")
 		parametros := strings.Split(linea, ",")
 		if parametros[1] != "U" {
 			continue
 		}
-		if parametros[2] == userName {
+		if parametros[3] == userName {
 			return true
 		}
 	}

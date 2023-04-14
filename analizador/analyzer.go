@@ -69,8 +69,9 @@ func (a *Analyzer) MatchParams(command string, params []string) {
 	} else if command == "mkusr" {
 		m := usuariosygrupos.Mkusr{}
 		m.Exe(params)
-	} else if command == "rmuser" {
-		fmt.Println("")
+	} else if command == "rmusr" {
+		r := usuariosygrupos.Rmusr{}
+		r.Exe(params)
 	} else if command == "rep" {
 		fmt.Println("")
 	} else if strings.Contains(command, "#") {
