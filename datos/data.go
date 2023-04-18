@@ -35,7 +35,7 @@ type SuperBloque struct {
 	S_inodes_count      int64    // Guarda el numero total de inodos
 	S_blocks_count      int64    // Guarda el numero total de bloques
 	S_free_blocks_count int64    // Contiene el numero de bloques libres
-	S_free_inodes_count int64    // Contiene el numero de indoos libres
+	S_free_inodes_count int64    // Contiene el numero de inodos libres
 	S_mtime             [20]byte // Ultima fecha en el que el sistema fue montado
 	S_mnt_count         int64    // Indica cuantas veces se ha montado el sistema
 	S_magic             int64    // Valor que identifica el sistema de archivos, tendra el valor 0xEF53
