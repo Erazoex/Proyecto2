@@ -23,3 +23,6 @@ mkusr >user=brian >pwd=456 >grp=admins
 mkusr >user=josue >pwd=456 >grp=admins
 mkusr >user=allan >pwd=123 >grp=admins
 rmusr >user=brian
+mkfile >size=15 >path=/home/user/docs/a.txt >r
+mkfile >size=400 >path=/home/user/docs/file.txt >cont=/home/mia/pruebas/archivo1.txt
+mkdir >r >path=/home/user/docs/usac

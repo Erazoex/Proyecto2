@@ -29,7 +29,7 @@ type Mkfile struct {
 
 func (m *Mkfile) Exe(parametros []string) {
 	m.Params = m.SaveParams(parametros)
-	if m.Mkfile(m.Params.Path, m.Params.R, m.Params.Size, m.Params.Path) {
+	if m.Mkfile(m.Params.Path, m.Params.R, m.Params.Size, m.Params.Cont) {
 		fmt.Printf("\nel archivo con ruta %s se creo correctamente\n\n", m.Params.Path)
 	} else {
 		fmt.Printf("\nel archivo con ruta %s no se pudo crear\n\n", m.Params.Path)
@@ -69,10 +69,12 @@ func (m *Mkfile) Mkfile(path string, r bool, size int, cont string) bool {
 		fmt.Println("no se encontro una ruta")
 		return false
 	}
+	path = strings.Replace(path, "/", "", 1)
 	if !logger.Log.IsLoggedIn() {
 		fmt.Println("no se encuentra un usuario loggeado para crear un archivo")
 		return false
 	}
+
 	if lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value != nil {
 		return createFile(logger.Log.GetUserName(), lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Ruta, path, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value.Part_start, r, size, cont)
 	} else if lista.ListaMount.GetNodeById(logger.Log.GetUserId()).ValueL != nil {
@@ -93,8 +95,8 @@ func createFile(name [10]byte, path, ruta string, whereToStart int64, r bool, si
 	comandos.Fread(&tablaInodoUsers, path, superbloque.S_inode_start+superbloque.S_inode_size)
 	contenido := ReadFile(&tablaInodoUsers, path, &superbloque)
 	// obteniendo el user id y el group id
-	userId := getUserId(contenido, string(name[:]))
-	groupdId := getGroupId(contenido, string(name[:]))
+	userId := GetUserId(contenido, string(name[:]))
+	groupdId := GetGroupId(contenido, string(name[:]))
 	if r {
 		// Create directories
 		FindAndCreateDirectories(&tablaInodoRoot, path, ruta, &superbloque, 0, userId, groupdId)
@@ -136,7 +138,7 @@ func createFile(name [10]byte, path, ruta string, whereToStart int64, r bool, si
 	return true
 }
 
-func getGroupId(contenido, name string) int64 {
+func GetGroupId(contenido, name string) int64 {
 	lineas := strings.Split(contenido, "\n")
 	lineas = lineas[:len(lineas)-1]
 	groupName := ""
@@ -167,7 +169,7 @@ func getGroupId(contenido, name string) int64 {
 	return -1
 }
 
-func getUserId(contenido, name string) int64 {
+func GetUserId(contenido, name string) int64 {
 	lineas := strings.Split(contenido, "\n")
 	lineas = lineas[:len(lineas)-1]
 	for _, linea := range lineas {

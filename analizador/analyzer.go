@@ -72,8 +72,15 @@ func (a *Analyzer) MatchParams(command string, params []string) {
 	} else if command == "rmusr" {
 		r := usuariosygrupos.Rmusr{}
 		r.Exe(params)
+	} else if command == "mkfile" {
+		m := usuariosygrupos.Mkfile{}
+		m.Exe(params)
+	} else if command == "mkdir" {
+		m := usuariosygrupos.Mkdir{}
+		m.Exe(params)
 	} else if command == "rep" {
-		fmt.Println("")
+		r := usuariosygrupos.Rep{}
+		r.Exe(params)
 	} else if strings.Contains(command, "#") {
 		fmt.Printf("%s", command)
 		for i := 0; i < len(params); i++ {

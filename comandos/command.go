@@ -172,3 +172,19 @@ func Fread(estructura interface{}, path string, position int64) {
 	}
 	defer file.Close()
 }
+
+func Fopen(path, contenido string) {
+	file, err := os.Create(path)
+	if err != nil {
+		fmt.Println("no se pudo crear el archivo:", path, err.Error())
+		return
+	}
+	defer file.Close()
+
+	_, err = file.Write([]byte(contenido))
+	if err != nil {
+		fmt.Println("no se pudo escribir al archivo:", path, err.Error())
+	}
+
+	fmt.Println("archivo creado con exito:", path)
+}
