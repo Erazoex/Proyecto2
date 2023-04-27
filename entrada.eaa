@@ -26,3 +26,4 @@ rmusr >user=brian
 mkfile >size=15 >path=/home/user/docs/a.txt >r
 mkfile >size=150 >path=/home/user/docs/b.txt >cont=/home/mia/pruebas/archivo1.txt
 mkdir >r >path=/home/user/docs/nCarpeta/destino
+mkdir >path=/temp
