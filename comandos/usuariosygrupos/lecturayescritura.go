@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"unsafe"
 
 	"github.com/erazoex/proyecto2/bitmap"
 	"github.com/erazoex/proyecto2/comandos"
@@ -19,7 +18,7 @@ func ReadFile(tablaInodo *datos.TablaInodo, path string, superbloque *datos.Supe
 			continue
 		}
 		var parteArchivo datos.BloqueDeArchivos
-		comandos.Fread(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+		comandos.Fread(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 		contenido += string(parteArchivo.B_content[:])
 	}
 	return contenido
@@ -29,7 +28,7 @@ func AppendFile(path string, superbloque *datos.SuperBloque, tablaInodo *datos.T
 	for i := 0; i < len(tablaInodo.I_block); i++ {
 		if tablaInodo.I_block[i] != -1 {
 			var parteArchivo datos.BloqueDeArchivos
-			comandos.Fread(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+			comandos.Fread(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 			if strlen(parteArchivo.B_content) == 63 {
 				continue
 			} else if strlen(parteArchivo.B_content) < 63 {
@@ -37,11 +36,11 @@ func AppendFile(path string, superbloque *datos.SuperBloque, tablaInodo *datos.T
 				// nuevoContenidoArray := createArray([]byte(nuevoContenido))
 				if StrlenBytes([]byte(nuevoContenido)) > 63 {
 					copy(parteArchivo.B_content[:], nuevoContenido[:63])
-					comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+					comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 					AppendFile(path, superbloque, tablaInodo, string(nuevoContenido[63:]))
 				} else {
 					copy(parteArchivo.B_content[:], []byte(nuevoContenido))
-					comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+					comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 				}
 				return true
 			}
@@ -52,11 +51,11 @@ func AppendFile(path string, superbloque *datos.SuperBloque, tablaInodo *datos.T
 			tablaInodo.I_block[i] = nuevaPosicion
 			if StrlenBytes([]byte(contenido)) > 63 {
 				copy(nuevoBloque.B_content[:], nuevoContenido[:63])
-				comandos.Fwrite(&nuevoBloque, path, superbloque.S_block_start+nuevaPosicion*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+				comandos.Fwrite(&nuevoBloque, path, superbloque.S_block_start+nuevaPosicion*superbloque.S_block_size)
 				AppendFile(path, superbloque, tablaInodo, string(nuevoContenido[63:]))
 			} else {
 				copy(nuevoBloque.B_content[:], nuevoContenido)
-				comandos.Fwrite(&nuevoBloque, path, superbloque.S_block_start+nuevaPosicion*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+				comandos.Fwrite(&nuevoBloque, path, superbloque.S_block_start+nuevaPosicion*superbloque.S_block_size)
 			}
 			return true
 		}
@@ -71,12 +70,12 @@ func modFile(tablaInodo *datos.TablaInodo, path string, superbloque *datos.Super
 			continue
 		}
 		var parteArchivo datos.BloqueDeArchivos
-		comandos.Fread(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+		comandos.Fread(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 		contenido += string(parteArchivo.B_content[:])
 		parteArchivo.B_content = [64]byte{}
 		// fmt.Println(parteArchivo.B_content)
 		copy(parteArchivo.B_content[:], "modificar")
-		comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+		comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 	}
 	return contenido
 }
@@ -87,17 +86,17 @@ func SetFile(tablaInodo *datos.TablaInodo, path string, superbloque *datos.Super
 			continue
 		}
 		var parteArchivo datos.BloqueDeArchivos
-		comandos.Fread(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+		comandos.Fread(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 		comparador := [64]byte{}
 		copy(comparador[:], []byte("modificar"))
 		if bytes.Equal(parteArchivo.B_content[:], comparador[:]) {
 			if StrlenBytes([]byte(contenido)) > 63 {
 				copy(parteArchivo.B_content[:], contenido[:63])
-				comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+				comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 				return SetFile(tablaInodo, path, superbloque, string(contenido[63:]))
 			} else {
 				copy(parteArchivo.B_content[:], []byte(contenido))
-				comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeArchivos{})))
+				comandos.Fwrite(&parteArchivo, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 			}
 			return true
 		}
@@ -107,7 +106,7 @@ func SetFile(tablaInodo *datos.TablaInodo, path string, superbloque *datos.Super
 }
 
 func FindAndCreateDirectories(tablaInodo *datos.TablaInodo, path, ruta string, superbloque *datos.SuperBloque, posicionActual, userId, groupId int64) {
-	// fmt.Println(ruta)
+	fmt.Println(ruta)
 	var rutaParts []string
 	if !strings.Contains(ruta, "/") {
 		// si no contiene un "/" quiere decir que ya estamos con el nombre del archivo
@@ -119,14 +118,19 @@ func FindAndCreateDirectories(tablaInodo *datos.TablaInodo, path, ruta string, s
 	for i := 0; i < len(tablaInodo.I_block); i++ {
 		var bloqueDeCarpetas datos.BloqueDeCarpetas
 		if tablaInodo.I_block[i] == -1 {
-			// esto significa que no encontro el directorio que se buscaba
-			posicion := bitmap.WriteInBitmapInode(path, superbloque)
-			tablaInodo.I_block[i] = posicion
-			comandos.Fwrite(tablaInodo, path, superbloque.S_block_start+posicionActual*superbloque.S_block_size)
+			// esto significa que no bloque de carpetas con espacio libre
+			// y que tampoco encontro el directorio que se buscaba
+			posicion := bitmap.WriteInBitmapBlock(path, superbloque)      // esto corresponde al nuevo bloque de carpeta
+			tablaInodo.I_block[i] = posicion                              // esto corresponde al nuevo bloque de carpeta
+			posicionNueva := bitmap.WriteInBitmapInode(path, superbloque) // agregaremos la nueva tabla de inodos
+			bloqueDeCarpetas.B_content[0].B_inodo = int32(posicionNueva)
+			copy(bloqueDeCarpetas.B_content[0].B_name[:], []byte(rutaParts[0])[:])
+			comandos.Fwrite(&bloqueDeCarpetas, path, superbloque.S_block_start+posicion*superbloque.S_block_size)
+			comandos.Fwrite(tablaInodo, path, superbloque.S_inode_start+posicionActual*superbloque.S_inode_size)
 			// despues de haber obtenido la nueva posicion de la nueva tabla de inodos
 			// ahora la crearemos y la llenaremos
 			var nuevaTablaInodo datos.TablaInodo
-			CreateNewDirectory(&nuevaTablaInodo, path, rutaParts[0], superbloque, posicion, posicionActual, userId, groupId)
+			CreateNewDirectory(&nuevaTablaInodo, path, superbloque, posicion, posicionActual, userId, groupId)
 			FindAndCreateDirectories(&nuevaTablaInodo, path, rutaParts[1], superbloque, posicion, userId, groupId)
 			return
 		}
@@ -136,7 +140,38 @@ func FindAndCreateDirectories(tablaInodo *datos.TablaInodo, path, ruta string, s
 			var nuevaTablaInodo datos.TablaInodo
 			comandos.Fread(&nuevaTablaInodo, path, superbloque.S_inode_start+num*superbloque.S_inode_size)
 			FindAndCreateDirectories(&nuevaTablaInodo, path, rutaParts[1], superbloque, num, userId, groupId)
-			break
+			return
+		}
+		if FreeSpace(&bloqueDeCarpetas) {
+			fmt.Println("entra aqui bloque carpetas")
+			posicionNueva := bitmap.WriteInBitmapInode(path, superbloque)
+			var nuevaTablainodo datos.TablaInodo
+			CreateNewDirectory(&nuevaTablainodo, path, superbloque, posicionNueva, posicionActual, userId, groupId)
+			AgregarTablaNueva(&bloqueDeCarpetas, rutaParts[0], posicionNueva)
+			comandos.Fwrite(&bloqueDeCarpetas, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
+			comandos.Fwrite(tablaInodo, path, superbloque.S_inode_start+posicionActual*superbloque.S_inode_size)
+			FindAndCreateDirectories(&nuevaTablainodo, path, rutaParts[1], superbloque, num, userId, groupId)
+			return
+		}
+	}
+}
+
+func FreeSpace(bloqueCarpeta *datos.BloqueDeCarpetas) bool {
+	for _, space := range bloqueCarpeta.B_content {
+		if space.B_inodo == -1 {
+			return true
+		}
+	}
+	return false
+}
+
+func AgregarTablaNueva(bloqueCarpeta *datos.BloqueDeCarpetas, nombreTabla string, nuevaTabla int64) {
+	for i := 0; i < len(bloqueCarpeta.B_content); i++ {
+		if bloqueCarpeta.B_content[i].B_inodo == -1 {
+			copy(bloqueCarpeta.B_content[i].B_name[:], []byte(nombreTabla))
+			bloqueCarpeta.B_content[i].B_inodo = int32(nuevaTabla)
+			fmt.Println("nombre de B_inodo", string(bloqueCarpeta.B_content[i].B_name[:]))
+			return
 		}
 	}
 }
@@ -156,21 +191,23 @@ func FindDirectories(AgregarTabla int64, tablaInodo *datos.TablaInodo, path, rut
 		if tablaInodo.I_block[i] == -1 {
 			continue
 		}
-		comandos.Fread(&bloqueDeCarpetas, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeCarpetas{})))
+		comandos.Fread(&bloqueDeCarpetas, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 		num, compare := CompareDirectories(rutaParts[0], &bloqueDeCarpetas)
 		if compare {
 			var nuevaTablaInodo datos.TablaInodo
-			comandos.Fread(&nuevaTablaInodo, path, superbloque.S_inode_start+num*int64(unsafe.Sizeof(datos.TablaInodo{})))
+			comandos.Fread(&nuevaTablaInodo, path, superbloque.S_inode_start+num*superbloque.S_inode_size)
 			FindDirectories(AgregarTabla, &nuevaTablaInodo, path, rutaParts[1], superbloque, num)
 			return
 		}
 	}
 }
 
-func FindAndCreateNewDirectory(AgregarTabla int64, tablaInodo *datos.TablaInodo, path, ruta string, superbloque *datos.SuperBloque, posicionActual, userId, groupId int64) {
+func FindDirs(AgregarTabla int64, tablaInodo *datos.TablaInodo, path, ruta string, superbloque *datos.SuperBloque, posicionActual int64) {
 	var rutaParts []string
 	if !strings.Contains(ruta, "/") {
-		// si no contiene un "/" quiere decir que ya estamos con el nombre de la ultima carpeta
+		// si no contiene un "/" quiere decir que ya estamos con el nombre del archivo
+		// por lo tanto ya no hay necesidad de crear un directorio
+
 		crearCarpetaDentroDeTablaInodo(AgregarTabla, posicionActual, tablaInodo, superbloque, path, ruta)
 		return
 	}
@@ -180,12 +217,12 @@ func FindAndCreateNewDirectory(AgregarTabla int64, tablaInodo *datos.TablaInodo,
 		if tablaInodo.I_block[i] == -1 {
 			continue
 		}
-		comandos.Fread(&bloqueDeCarpetas, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeCarpetas{})))
+		comandos.Fread(&bloqueDeCarpetas, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 		num, compare := CompareDirectories(rutaParts[0], &bloqueDeCarpetas)
 		if compare {
 			var nuevaTablaInodo datos.TablaInodo
-			comandos.Fread(&nuevaTablaInodo, path, superbloque.S_inode_start+num*int64(unsafe.Sizeof(datos.TablaInodo{})))
-			FindAndCreateNewDirectory(AgregarTabla, &nuevaTablaInodo, path, rutaParts[1], superbloque, num, userId, groupId)
+			comandos.Fread(&nuevaTablaInodo, path, superbloque.S_inode_start+num*superbloque.S_inode_size)
+			FindDirs(AgregarTabla, &nuevaTablaInodo, path, rutaParts[1], superbloque, num)
 			return
 		}
 	}
@@ -245,7 +282,7 @@ func crearArchivoDentroDeTablaInodo(AgregarTabla int64, tablaInodo *datos.TablaI
 	}
 }
 
-func CreateNewDirectory(nuevaTabla *datos.TablaInodo, path, nombre string, superbloque *datos.SuperBloque, posicionActual, posicionPadre, userId, groupId int64) {
+func CreateNewDirectory(nuevaTabla *datos.TablaInodo, path string, superbloque *datos.SuperBloque, posicionActual, posicionPadre, userId, groupId int64) {
 	// aqui llenaremos la nueva tabla de inodos
 	nuevaTabla.I_uid = userId
 	nuevaTabla.I_gid = groupId
@@ -301,7 +338,7 @@ func SearchFreeSpace(tablaInodo *datos.TablaInodo, path string, superbloque *dat
 			fmt.Println("no se encontro un espacio libre")
 			return bloqueCarpeta
 		}
-		comandos.Fread(&bloqueCarpeta, path, superbloque.S_block_start+tablaInodo.I_block[i]*int64(unsafe.Sizeof(datos.BloqueDeCarpetas{})))
+		comandos.Fread(&bloqueCarpeta, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 		if !SearchFreeSpaceInBlock(&bloqueCarpeta) {
 			continue
 		}
@@ -340,6 +377,65 @@ func CompareDirectories(rutaPart string, bloqueCarpeta *datos.BloqueDeCarpetas) 
 		}
 	}
 	return -1, false
+}
+
+func PrintTree(tablaInodo *datos.TablaInodo, superbloque *datos.SuperBloque, path string) {
+	fmt.Println("I_uid:", tablaInodo.I_uid)
+	fmt.Println("I_gid:", tablaInodo.I_gid)
+	fmt.Println("I_size:", tablaInodo.I_size)
+	fmt.Println("I_atime:", string(tablaInodo.I_atime[:]))
+	fmt.Println("I_ctime:", string(tablaInodo.I_ctime[:]))
+	fmt.Println("I_mtime:", string(tablaInodo.I_mtime[:]))
+	for i := 0; i < len(tablaInodo.I_block); i++ {
+		fmt.Printf("I_block[%d]: %d\n", i, tablaInodo.I_block[i])
+	}
+	fmt.Println("I_type:", tablaInodo.I_type)
+	fmt.Println("I_perm:", tablaInodo.I_perm)
+	if tablaInodo.I_type == '0' {
+		PrintBloqueDeCarpetas(tablaInodo, superbloque, path)
+	} else {
+		PrintBloqueDeArchivos(tablaInodo, superbloque, path)
+	}
+}
+
+func PrintBloqueDeCarpetas(tablaInodo *datos.TablaInodo, superbloque *datos.SuperBloque, path string) {
+	for i := 0; i < len(tablaInodo.I_block); i++ {
+		if tablaInodo.I_block[i] == -1 {
+			continue
+		}
+		var bloqueDeCarpetas datos.BloqueDeCarpetas
+		comandos.Fread(&bloqueDeCarpetas, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
+		for _, contenido := range bloqueDeCarpetas.B_content {
+			fmt.Println("B_name:", string(contenido.B_name[:]))
+			fmt.Println("B_inodo:", contenido.B_inodo)
+		}
+	}
+	for i := 0; i < len(tablaInodo.I_block); i++ {
+		if tablaInodo.I_block[i] == -1 {
+			continue
+		}
+		var bloqueDeCarpetas datos.BloqueDeCarpetas
+		comandos.Fread(&bloqueDeCarpetas, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
+		for _, contenido := range bloqueDeCarpetas.B_content {
+			var nuevaTablaInodo datos.TablaInodo
+			if contenido.B_inodo == -1 || string(trimArray(contenido.B_name[:])) == "." || string(trimArray(contenido.B_name[:])) == ".." {
+				continue
+			}
+			comandos.Fread(&nuevaTablaInodo, path, superbloque.S_inode_start+int64(contenido.B_inodo)*superbloque.S_inode_size)
+			PrintTree(&nuevaTablaInodo, superbloque, path)
+		}
+	}
+}
+
+func PrintBloqueDeArchivos(tablaInodo *datos.TablaInodo, superbloque *datos.SuperBloque, path string) {
+	for i := 0; i < len(tablaInodo.I_block); i++ {
+		if tablaInodo.I_block[i] == -1 {
+			continue
+		}
+		var bloqueDeArchivos datos.BloqueDeArchivos
+		comandos.Fread(&bloqueDeArchivos, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
+		fmt.Printf("bloque[%d]: %s\n", i, string(bloqueDeArchivos.B_content[:]))
+	}
 }
 
 func strlen(arr [64]byte) int {

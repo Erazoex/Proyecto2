@@ -81,6 +81,7 @@ func (m *Mkgrp) MkgrpPartition(name string, whereToStart int64, path string) boo
 	if AppendFile(path, &superbloque, &tablaInodo, grupo) {
 		comandos.Fwrite(&tablaInodo, path, superbloque.S_inode_start+int64(unsafe.Sizeof(datos.TablaInodo{})))
 		fmt.Println(ReadFile(&tablaInodo, path, &superbloque))
+		comandos.Fwrite(&superbloque, path, whereToStart)
 		return true
 	}
 	return false

@@ -6,35 +6,34 @@ import (
 	"os"
 	"unsafe"
 
+	"github.com/erazoex/proyecto2/comandos"
 	"github.com/erazoex/proyecto2/datos"
 )
 
 func WriteInBitmapInode(path string, superbloque *datos.SuperBloque) int64 {
-	file := OpenNewFile(path)
 	valor := byte('1')
 	position := superbloque.S_first_ino
+	// fmt.Println("S_first_ino:", position)
 	if position == -1 {
 		fmt.Println("no se encontro posicion vacia, bitmap inode")
 		return -1
 	}
-	file.Seek(superbloque.S_bm_inode_start+position*int64(unsafe.Sizeof(valor)), 0)
-	FwriteByte(file, &valor)
-	superbloque.S_first_ino = SearchFirstFreeBitmapInodePos(file, superbloque)
+	comandos.Fwrite(&valor, path, superbloque.S_bm_inode_start+position*int64(unsafe.Sizeof(valor)))
+	superbloque.S_first_ino = SearchFirstFreeBitmapInodePos(path, superbloque)
 	superbloque.S_free_inodes_count--
 	return position
 }
 
 func WriteInBitmapBlock(path string, superbloque *datos.SuperBloque) int64 {
-	file := OpenNewFile(path)
 	valor := byte('1')
 	position := superbloque.S_first_blo
+	// fmt.Println("S_first_blo:", position)
 	if position == -1 {
 		fmt.Println("no se encontro posicion vacia, bitmap block")
 		return -1
 	}
-	file.Seek(superbloque.S_bm_block_start+position*int64(unsafe.Sizeof(valor)), 0)
-	FwriteByte(file, &valor)
-	superbloque.S_first_blo = SearchFirstFreeBitmapBlockPos(file, superbloque)
+	comandos.Fwrite(&valor, path, superbloque.S_bm_block_start+position*int64(unsafe.Sizeof(valor)))
+	superbloque.S_first_blo = SearchFirstFreeBitmapBlockPos(path, superbloque)
 	superbloque.S_free_blocks_count--
 	return position
 }
@@ -42,31 +41,29 @@ func WriteInBitmapBlock(path string, superbloque *datos.SuperBloque) int64 {
 // funciones para borrar en los bitmap de bloques
 
 func DeleteBitmapInode(path string, superbloque *datos.SuperBloque, posicion int64) {
-	file := OpenNewFile(path)
-	valor := byte('0')
-	file.Seek(superbloque.S_bm_inode_start+(posicion*int64(unsafe.Sizeof(valor))), 0)
-	FwriteByte(file, &valor)
-	superbloque.S_first_ino = SearchFirstFreeBitmapInodePos(file, superbloque)
+	// valor := byte('0')
+	// file.Seek(superbloque.S_bm_inode_start+(posicion*int64(unsafe.Sizeof(valor))), 0)
+	// FwriteByte(file, &valor)
+	superbloque.S_first_ino = SearchFirstFreeBitmapInodePos(path, superbloque)
 	superbloque.S_free_inodes_count++
 }
 
 func DeleteBitmapBlock(path string, superbloque *datos.SuperBloque, posicion int64) {
-	file := OpenNewFile(path)
-	valor := byte('0')
-	file.Seek(superbloque.S_bm_block_start+(posicion*int64(unsafe.Sizeof(valor))), 0)
-	FwriteByte(file, &valor)
-	superbloque.S_first_blo = SearchFirstFreeBitmapBlockPos(file, superbloque)
+	// valor := byte('0')
+	// file.Seek(superbloque.S_bm_block_start+(posicion*int64(unsafe.Sizeof(valor))), 0)
+	// FwriteByte(file, &valor)
+	superbloque.S_first_blo = SearchFirstFreeBitmapBlockPos(path, superbloque)
 	superbloque.S_free_blocks_count++
 }
 
 // buscar primer bit libre en los bitmaps
 
-func SearchFirstFreeBitmapInodePos(file *os.File, superbloque *datos.SuperBloque) int64 {
+func SearchFirstFreeBitmapInodePos(path string, superbloque *datos.SuperBloque) int64 {
 	contar := 0
-	flag := true
-	for flag && contar < int(superbloque.S_inodes_count) {
+	for contar < int(superbloque.S_inodes_count) {
 		i := byte('0')
-		FreadByte(file, &i)
+		comandos.Fread(&i, path, superbloque.S_bm_inode_start+int64(contar)*int64(unsafe.Sizeof(i)))
+		// fmt.Println("byte en bitmap de inodo", i)
 		if i == '0' {
 			return int64(contar)
 		}
@@ -75,12 +72,12 @@ func SearchFirstFreeBitmapInodePos(file *os.File, superbloque *datos.SuperBloque
 	return -1
 }
 
-func SearchFirstFreeBitmapBlockPos(file *os.File, superbloque *datos.SuperBloque) int64 {
+func SearchFirstFreeBitmapBlockPos(path string, superbloque *datos.SuperBloque) int64 {
 	contar := 0
-	flag := true
-	for flag && contar < int(superbloque.S_blocks_count) {
+	for contar < int(superbloque.S_blocks_count) {
 		i := byte('0')
-		FreadByte(file, &i)
+		comandos.Fread(&i, path, superbloque.S_bm_block_start+int64(contar)*int64(unsafe.Sizeof(i)))
+		// fmt.Println("byte en bitmap de bloque", i)
 		if i == '0' {
 			return int64(contar)
 		}
@@ -114,5 +111,16 @@ func OpenNewFile(path string) *os.File {
 		fmt.Println("no se pudo abrir el archivo para Bitmap", err.Error())
 		return nil
 	}
+	fmt.Println(file)
 	return file
+}
+
+func S_bm_inode_print(file *os.File, superbloque *datos.SuperBloque) {
+	contador := 0
+	bit := byte('2')
+	for contador < int(superbloque.S_inodes_count) {
+		FreadByte(file, &bit)
+		fmt.Println(bit)
+		contador++
+	}
 }

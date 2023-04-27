@@ -106,12 +106,14 @@ func createFile(name [10]byte, path, ruta string, whereToStart int64, r bool, si
 		// Retrieve information
 		// fmt.Println("Retrieve information")
 		content = getContent(cont)
+		// fmt.Println(content)
 	}
 	if size != 0 {
 		// Create content
 		if StrlenBytes([]byte(content)) != 0 && StrlenBytes([]byte(content)) < size {
+			// fmt.Println("entra aqui a ver lo del content")
 			contador := 0
-			for i := StrlenBytes([]byte(content)); i < (StrlenBytes([]byte(content)) + size); i++ {
+			for i := StrlenBytes([]byte(content)); i < size; i++ {
 				if contador != 9 {
 					contador++
 				} else {
@@ -133,8 +135,13 @@ func createFile(name [10]byte, path, ruta string, whereToStart int64, r bool, si
 		}
 		// fmt.Println("Create content")
 	}
+	fmt.Println("el content despues de agregarle numeros")
+	fmt.Println(content)
 	num := NewInodeFile(&superbloque, path, userId, groupdId, content)
 	FindDirectories(num, &tablaInodoRoot, path, ruta, &superbloque, 0)
+	comandos.Fwrite(&tablaInodoRoot, path, superbloque.S_inode_start)
+	comandos.Fwrite(&superbloque, path, whereToStart)
+	PrintTree(&tablaInodoRoot, &superbloque, path)
 	return true
 }
 
@@ -188,7 +195,7 @@ func GetUserId(contenido, name string) int64 {
 
 func NewInodeFile(superbloque *datos.SuperBloque, path string, userId, groupId int64, contenido string) int64 {
 	var nuevaTabla datos.TablaInodo
-	nuevaPosicion := bitmap.WriteInBitmapBlock(path, superbloque)
+	nuevaPosicion := bitmap.WriteInBitmapInode(path, superbloque)
 	// aqui llenaremos la nueva tabla de inodos
 	nuevaTabla.I_uid = userId
 	nuevaTabla.I_gid = groupId
@@ -216,6 +223,7 @@ func NewInodeFile(superbloque *datos.SuperBloque, path string, userId, groupId i
 	// aqui escribiremos el contenido y crearemos nuevos bloques de archivos
 	llenarTablaDeInodoDeArchivos(&nuevaTabla, superbloque, path, contenido)
 	// escribiendo la tabla de inodos del nuevo archivo
+	// fmt.Println("nueva posicion de archivo:", nuevaPosicion)
 	comandos.Fwrite(&nuevaTabla, path, superbloque.S_inode_start+nuevaPosicion*superbloque.S_inode_size)
 	return nuevaPosicion
 }
@@ -236,7 +244,7 @@ func getContent(cont string) string {
 	// Leyendo linea por linea
 	for scanner.Scan() {
 		// obteniendo la linea actual
-		content += scanner.Text()
+		content += scanner.Text() + "\n"
 	}
 
 	// comprobar que no hubo error al leer el archivo

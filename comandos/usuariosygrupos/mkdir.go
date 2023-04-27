@@ -89,7 +89,10 @@ func createDirectory(name [10]byte, path, ruta string, whereToStart int64, r boo
 	}
 
 	num := NewInodeDirectory(&superbloque, path, userId, groupdId)
-	crearCarpetaDentroDeTablaInodo(num, 0, &tablaInodoRoot, &superbloque, path, ruta)
+	FindDirs(num, &tablaInodoRoot, path, ruta, &superbloque, 0)
+	comandos.Fwrite(&tablaInodoRoot, path, superbloque.S_inode_start)
+	comandos.Fwrite(&superbloque, path, whereToStart)
+	PrintTree(&tablaInodoRoot, &superbloque, path)
 	return true
 }
 

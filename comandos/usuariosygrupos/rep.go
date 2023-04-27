@@ -24,6 +24,11 @@ type Rep struct {
 
 func (r *Rep) Exe(parametros []string) {
 	r.Params = r.SaveParams(parametros)
+	if r.Rep(r.Params.Name, r.Params.Path, r.Params.Id, r.Params.Ruta) {
+		fmt.Printf("\nse creo el reporte de tipo %s para la ruta %s correctamente\n\n", r.Params.Name, r.Params.Path)
+	} else {
+		fmt.Printf("\nno se pudo crear el reporte de tipo %s para la ruta %s\n\n", r.Params.Name, r.Params.Path)
+	}
 }
 
 func (r *Rep) SaveParams(parametros []string) ParametrosRep {
@@ -111,7 +116,7 @@ func (r *Rep) ReporteDisk(path, id string) {
 	for _, part := range master.Mbr_partitions {
 		if part.Part_status == '5' {
 			porcentaje := (float64(part.Part_size) / float64(tamano_master)) * 100
-			contenido += "\t\t\t<TD bgcolor=\"green\" ROWSPAN=\"2\" COLSPAN=\"1\"><BR/>Libre<BR/>" + string(int(porcentaje)) + "%</TD>\n"
+			contenido += "\t\t\t<TD bgcolor=\"green\" ROWSPAN=\"2\" COLSPAN=\"1\"><BR/>Libre<BR/>" + strconv.Itoa(int(porcentaje)) + "%</TD>\n"
 		} else if part.Part_status == '0' {
 			contenido += "\t\t\t<TD bgcolor=\"green\" ROWSPAN=\"2\" COLSPAN=\"1\"><BR/>Libre<BR/></TD>\n"
 		} else if part.Part_type == 'e' || part.Part_type == 'E' {
@@ -121,11 +126,11 @@ func (r *Rep) ReporteDisk(path, id string) {
 			if numeroDeLogicas == 0 {
 				contenido += "\t\t\t<TD bgcolor=\"green\" ROWSPAN=\"2\" COLSPAN=\"1\">Extendida</TD>\n"
 			} else {
-				contenido += "\t\t\t<TD bgcolor=\"green\" ROWSPAN=\"1\" COLSPAN=\"" + string(2*numeroDeLogicas) + "\">Extendida</TD>\n"
+				contenido += "\t\t\t<TD bgcolor=\"green\" ROWSPAN=\"1\" COLSPAN=\"" + strconv.Itoa(2*numeroDeLogicas) + "\">Extendida</TD>\n"
 			}
 		} else {
 			porcentaje := (float64(part.Part_size) / float64(tamano_master)) * 100
-			contenido += "\t\t\t<TD bgcolor=\"green\" ROWSPAN=\"2\" COLSPAN=\"1\"><BR/>Primaria<BR/>" + string(int(porcentaje)) + "%</TD>\n"
+			contenido += "\t\t\t<TD bgcolor=\"green\" ROWSPAN=\"2\" COLSPAN=\"1\"><BR/>Primaria<BR/>" + strconv.Itoa(int(porcentaje)) + "%</TD>\n"
 		}
 	}
 	contenido += "\t\t</TR>\n"
@@ -217,6 +222,7 @@ func (r *Rep) ReporteFile(path, id, ruta string) {
 	// leeremos la primera tabla de inodos
 	var tablaRoot datos.TablaInodo
 	comandos.Fread(&tablaRoot, node.Ruta, superbloque.S_inode_start)
+	ruta = strings.Replace(ruta, "/", "", 1)
 	archivo += r.RecorrerArchivo(&tablaRoot, path, ruta, &superbloque)
 	// ahora iniciaremos el archivo graphviz
 	contenido := "digraph {\n"
@@ -247,10 +253,12 @@ func (r *Rep) RecorrerArchivo(tablaInodo *datos.TablaInodo, path, ruta string, s
 		return contenido
 	}
 	rutaParts = strings.SplitN(ruta, "/", 2)
+	fmt.Println(rutaParts)
 	for i := 0; i < len(tablaInodo.I_block); i++ {
 		var bloqueCarpeta datos.BloqueDeCarpetas
+		fmt.Println("posicion ->", tablaInodo.I_block[i])
 		if tablaInodo.I_block[i] == -1 {
-			return ""
+			break
 		}
 		comandos.Fread(&bloqueCarpeta, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)
 		num, compare := CompareDirectories(rutaParts[0], &bloqueCarpeta)
