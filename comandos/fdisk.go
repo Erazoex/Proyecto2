@@ -176,7 +176,7 @@ func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte,
 	existeParticionLibre := false
 	if t != 'l' && t != 'L' {
 		for _, v := range master.Mbr_partitions {
-			if v.Part_status == 0 {
+			if v.Part_status == '0' {
 				existeParticionLibre = true
 			}
 		}

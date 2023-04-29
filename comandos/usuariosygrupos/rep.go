@@ -281,7 +281,7 @@ func (r *Rep) ReporteSuperBloque(path, id string) {
 	}
 	var superbloque datos.SuperBloque
 	comandos.Fread(&superbloque, node.Ruta, whereToStart)
-	contenido := ""
+	contenido := "digraph {\n"
 	contenido += "\tnode [shape=plaintext]\n"
 	contenido += "\ttable [label=<\n"
 	contenido += "\t\t<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\">\n"
@@ -291,7 +291,7 @@ func (r *Rep) ReporteSuperBloque(path, id string) {
 	contenido += "\t\t\t<TR><TD> s_blocks_count </TD><TD>" + strconv.Itoa(int(superbloque.S_blocks_count)) + "</TD></TR>\n"
 	contenido += "\t\t\t<TR><TD bgcolor=\"#85F388\"> s_free_blocks_count </TD><TD bgcolor=\"#85F388\">" + strconv.Itoa(int(superbloque.S_free_blocks_count)) + "</TD></TR>\n"
 	contenido += "\t\t\t<TR><TD> s_free_inodes_count </TD><TD>" + strconv.Itoa(int(superbloque.S_free_inodes_count)) + "</TD></TR>\n"
-	contenido += "\t\t\t<TR><TD bgcolor=\"#85F388\"> s_mtime </TD><TD bgcolor=\"#85F388\">" + string(superbloque.S_mtime[:]) + "</TD></TR>\n"
+	contenido += "\t\t\t<TR><TD bgcolor=\"#85F388\"> s_mtime </TD><TD bgcolor=\"#85F388\">" + string(TrimArray(superbloque.S_mtime[:])) + "</TD></TR>\n"
 	contenido += "\t\t\t<TR><TD bgcolor=\"#85F388\"> s_mnt_count </TD><TD bgcolor=\"#85F388\">" + strconv.Itoa(int(superbloque.S_mnt_count)) + "</TD></TR>\n"
 	contenido += "\t\t\t<TR><TD bgcolor=\"#85F388\"> s_magic </TD><TD bgcolor=\"#85F388\">" + strconv.FormatInt(superbloque.S_mnt_count, 16) + "</TD></TR>\n"
 	contenido += "\t\t\t<TR><TD bgcolor=\"#85F388\"> s_inode_size </TD><TD bgcolor=\"#85F388\">" + strconv.Itoa(int(superbloque.S_inode_size)) + "</TD></TR>\n"

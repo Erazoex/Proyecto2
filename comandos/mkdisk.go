@@ -134,12 +134,12 @@ func (m *Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
 }
 
 func FillPartitions(master *datos.MBR) {
-	for _, v := range master.Mbr_partitions {
-		v.Part_status = '0'
-		v.Part_fit = '0'
-		v.Part_start = 0
-		v.Part_size = 0
-		v.Part_type = '0'
-		copy(v.Part_name[:], "0")
+	for i := 0; i < len(master.Mbr_partitions); i++ {
+		master.Mbr_partitions[i].Part_status = '0'
+		master.Mbr_partitions[i].Part_fit = '0'
+		master.Mbr_partitions[i].Part_start = 0
+		master.Mbr_partitions[i].Part_size = 0
+		master.Mbr_partitions[i].Part_type = '0'
+		copy(master.Mbr_partitions[i].Part_name[:], "")
 	}
 }

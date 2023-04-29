@@ -27,3 +27,6 @@ mkfile >size=15 >path=/home/user/docs/a.txt >r
 mkfile >size=150 >path=/home/user/docs/b.txt >cont=/home/mia/pruebas/archivo1.txt
 mkdir >r >path=/home/user/docs/nCarpeta/destino
 mkdir >path=/temp
+rep >id=532disco1 >path=/home/mia/reports/reporte1.pdf >name=disk
+rep >id=532disco1 >path=/home/mia/reports/reporte2.pdf >name=sb
+rep >id=532disco1 >path=/home/mia/reports/reporte3.pdf >ruta=/home/user/docs/a.txt >name=file
