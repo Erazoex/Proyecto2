@@ -95,8 +95,8 @@ func createFile(name [10]byte, path, ruta string, whereToStart int64, r bool, si
 	comandos.Fread(&tablaInodoUsers, path, superbloque.S_inode_start+superbloque.S_inode_size)
 	contenido := ReadFile(&tablaInodoUsers, path, &superbloque)
 	// obteniendo el user id y el group id
-	userId := GetUserId(contenido, string(name[:]))
-	groupdId := GetGroupId(contenido, string(name[:]))
+	userId := GetUserId(contenido, string(TrimArray(name[:])))
+	groupdId := GetGroupId(contenido, string(TrimArray(name[:])))
 	if r {
 		// Create directories
 		FindAndCreateDirectories(&tablaInodoRoot, path, ruta, &superbloque, 0, userId, groupdId)
@@ -135,13 +135,13 @@ func createFile(name [10]byte, path, ruta string, whereToStart int64, r bool, si
 		}
 		// fmt.Println("Create content")
 	}
-	fmt.Println("el content despues de agregarle numeros")
-	fmt.Println(content)
+	// fmt.Println("el content despues de agregarle numeros")
+	// fmt.Println(content)
 	num := NewInodeFile(&superbloque, path, userId, groupdId, content)
 	FindDirectories(num, &tablaInodoRoot, path, ruta, &superbloque, 0)
 	comandos.Fwrite(&tablaInodoRoot, path, superbloque.S_inode_start)
 	comandos.Fwrite(&superbloque, path, whereToStart)
-	PrintTree(&tablaInodoRoot, &superbloque, path)
+	// PrintTree(&tablaInodoRoot, &superbloque, path)
 	return true
 }
 

@@ -81,8 +81,8 @@ func createDirectory(name [10]byte, path, ruta string, whereToStart int64, r boo
 	comandos.Fread(&tablaInodoUsers, path, superbloque.S_inode_start+superbloque.S_inode_size)
 	contenido := ReadFile(&tablaInodoUsers, path, &superbloque)
 	// obteniendo el user id y el group id
-	userId := GetUserId(contenido, string(name[:]))
-	groupdId := GetGroupId(contenido, string(name[:]))
+	userId := GetUserId(contenido, string(TrimArray(name[:])))
+	groupdId := GetGroupId(contenido, string(TrimArray(name[:])))
 	if r {
 		// Create directories
 		FindAndCreateDirectories(&tablaInodoRoot, path, ruta, &superbloque, 0, userId, groupdId)
@@ -92,7 +92,7 @@ func createDirectory(name [10]byte, path, ruta string, whereToStart int64, r boo
 	FindDirs(num, &tablaInodoRoot, path, ruta, &superbloque, 0)
 	comandos.Fwrite(&tablaInodoRoot, path, superbloque.S_inode_start)
 	comandos.Fwrite(&superbloque, path, whereToStart)
-	PrintTree(&tablaInodoRoot, &superbloque, path)
+	// PrintTree(&tablaInodoRoot, &superbloque, path)
 	return true
 }
 
@@ -143,6 +143,7 @@ func NewInodeDirectory(superbloque *datos.SuperBloque, path string, userId, grou
 	nuevoBloqueCarpetas.B_content[3].B_inodo = -1
 	// escribiendo la nueva tabla de inodos
 	comandos.Fwrite(&nuevaTabla, path, superbloque.S_inode_start+posicionActual*superbloque.S_inode_size)
+	comandos.Fwrite(&nuevoBloqueCarpetas, path, superbloque.S_block_start+posicionNuevoBloqueCarpetas*superbloque.S_block_size)
 	return posicionActual
 }
 
