@@ -14,3 +14,13 @@ func Equal(b [10]byte, s string) bool {
 	}
 	return true
 }
+
+func TrimArray(arr []byte) []byte {
+	var result []byte
+	for _, v := range arr {
+		if v != 0 {
+			result = append(result, v)
+		}
+	}
+	return result
+}

@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/erazoex/proyecto2/comandos"
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
 	"github.com/erazoex/proyecto2/lista"
 	"github.com/erazoex/proyecto2/logger"
@@ -26,9 +27,9 @@ type Mkusr struct {
 func (m *Mkusr) Exe(parametros []string) {
 	m.params = m.SaveParams(parametros)
 	if m.Mkusr(m.params.User, m.params.Pwd, m.params.Grp) {
-		fmt.Printf("\nusuario \"%s\" creado con exito en el grupo %s\n\n", m.params.User, m.params.Grp)
+		consola.AddToConsole(fmt.Sprintf("\nusuario \"%s\" creado con exito en el grupo %s\n\n", m.params.User, m.params.Grp))
 	} else {
-		fmt.Printf("no se logro crear el usuario \"%s\"\n\n", m.params.User)
+		consola.AddToConsole(fmt.Sprintf("no se logro crear el usuario \"%s\"\n\n", m.params.User))
 	}
 }
 
@@ -54,7 +55,7 @@ func (m *Mkusr) SaveParams(parametros []string) ParametrosMkusr {
 
 func (m *Mkusr) Mkusr(user string, pwd string, grp string) bool {
 	if user == "" {
-		fmt.Println("no se encontro ningun nombre")
+		consola.AddToConsole("no se encontro ningun nombre\n")
 		return true
 	}
 	if logger.Log.IsLoggedIn() && logger.Log.UserIsRoot() {
@@ -81,18 +82,18 @@ func (m *Mkusr) MkusrPartition(user string, pwd string, grp string, whereToStart
 		tablaInodo.I_mtime[i] = mtime.String()[i]
 	}
 	if m.ExisteUsuario(ReadFile(&tablaInodo, path, &superbloque), user) {
-		fmt.Println("ya existe usuario con ese nombre", user)
+		consola.AddToConsole(fmt.Sprintf("ya existe usuario con ese nombre %s\n", user))
 		return false
 	}
 	if !m.ExisteGrupo(ReadFile(&tablaInodo, path, &superbloque), grp) {
-		fmt.Printf("no existe un grupo con el nombre %s\n", grp)
+		consola.AddToConsole(fmt.Sprintf("no existe un grupo con el nombre %s\n", grp))
 		return false
 	}
 	numero := m.ContarUsuarios(ReadFile(&tablaInodo, path, &superbloque))
 	usuario := m.AgregarUsuario(numero, grp, user, pwd)
 	if AppendFile(path, &superbloque, &tablaInodo, usuario) {
 		comandos.Fwrite(&tablaInodo, path, superbloque.S_inode_start+int64(unsafe.Sizeof(datos.TablaInodo{})))
-		fmt.Println(ReadFile(&tablaInodo, path, &superbloque))
+		consola.AddToConsole(ReadFile(&tablaInodo, path, &superbloque))
 		comandos.Fwrite(&superbloque, path, whereToStart)
 		return true
 	}

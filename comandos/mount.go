@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
+	"github.com/erazoex/proyecto2/functions"
 	"github.com/erazoex/proyecto2/lista"
 )
 
@@ -21,9 +23,9 @@ type Mount struct {
 func (m *Mount) Exe(parametros []string) {
 	m.Params = m.SaveParams(parametros)
 	if m.Mount(m.Params.Path, m.Params.Name) {
-		fmt.Printf("\nparticion %s montada con exito\n\n", m.Params.Path)
+		consola.AddToConsole(fmt.Sprintf("\nparticion %s montada con exito\n\n", m.Params.Path))
 	} else {
-		fmt.Printf("no se logro montar la particion %s\n", m.Params.Path)
+		consola.AddToConsole(fmt.Sprintf("no se logro montar la particion %s\n", m.Params.Path))
 	}
 }
 
@@ -48,12 +50,12 @@ func (m *Mount) SaveParams(parametros []string) ParametrosMount {
 func (m *Mount) Mount(path string, name [16]byte) bool {
 	// comprobando que el parametro "path" sea diferente de ""
 	if path == "" {
-		fmt.Println("no se encontro una ruta")
+		consola.AddToConsole("no se encontro una ruta\n")
 		return false
 	}
 	// comprobando que el parametro "name" sea diferente de ""
 	if bytes.Equal(name[:], []byte("")) {
-		fmt.Println("se debe de contar con un nombre para realizar este comando")
+		consola.AddToConsole("se debe de contar con un nombre para realizar este comando\n")
 		return false
 	}
 	master := GetMBR(path)
@@ -65,11 +67,11 @@ func (m *Mount) Mount(path string, name [16]byte) bool {
 			// comprobaremos que la particion no se haya montado previamente
 			particionEncontrada = true
 			if particion.Part_status == '2' {
-				fmt.Println("la particion ya se encuentra montada")
+				consola.AddToConsole("la particion ya se encuentra montada\n")
 				return false
 			}
 			if particion.Part_type == 'e' || particion.Part_type == 'E' {
-				fmt.Println("no se puede montar una particion extendida")
+				consola.AddToConsole("no se puede montar una particion extendida\n")
 				return false
 			}
 			particion.Part_type = '2'
@@ -78,6 +80,7 @@ func (m *Mount) Mount(path string, name [16]byte) bool {
 			lista.ListaMount.Mount(path, 53, part, nil)
 			partitionMounted = true
 			// tener un metodo de MountList que agregue un texto a la consola
+			lista.ListaMount.PrintList()
 			break
 
 		}
@@ -89,11 +92,12 @@ func (m *Mount) Mount(path string, name [16]byte) bool {
 				partitionMounted = true
 				m.MountParticionLogica(path, int(particion.Part_start), name)
 				// tener un metodo de Mount List que agregue un texto a la consola
+				lista.ListaMount.PrintList()
 			}
 		}
 	}
 	if !partitionMounted {
-		fmt.Printf("no se encontro una particion con el nombre de %s\n", name)
+		consola.AddToConsole(fmt.Sprintf("no se encontro una particion con el nombre de %s\n", string(functions.TrimArray(name[:]))))
 		return false
 	}
 	WriteMBR(&master, path)
@@ -101,7 +105,6 @@ func (m *Mount) Mount(path string, name [16]byte) bool {
 }
 
 func (m *Mount) MountParticionLogica(path string, whereToStart int, name [16]byte) {
-	//TODO: aqui me quede toca seguir manana
 	logicPartitionMounted := false
 	temp := ReadEBR(path, int64(whereToStart))
 	flag := true
@@ -121,7 +124,7 @@ func (m *Mount) MountParticionLogica(path string, whereToStart int, name [16]byt
 		}
 	}
 	if !logicPartitionMounted {
-		fmt.Printf("no se encontro una particion con el nombre %s\n", name)
+		consola.AddToConsole(fmt.Sprintf("no se encontro una particion con el nombre %s\n", string(functions.TrimArray(name[:]))))
 		return
 	}
 }

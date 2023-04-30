@@ -7,6 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/erazoex/proyecto2/comandos"
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
 	"github.com/erazoex/proyecto2/lista"
 	"github.com/erazoex/proyecto2/logger"
@@ -23,9 +24,9 @@ type Rmusr struct {
 func (r *Rmusr) Exe(parametros []string) {
 	r.params = r.SaveParams(parametros)
 	if r.Rmusr(r.params.User) {
-		fmt.Printf("\nusuario \"%s\" eliminado con exito\n\n", r.params.User)
+		consola.AddToConsole(fmt.Sprintf("\nusuario \"%s\" eliminado con exito\n\n", r.params.User))
 	} else {
-		fmt.Printf("no se logro eliminar el usuario \"%s\"\n\n", r.params.User)
+		consola.AddToConsole(fmt.Sprintf("no se logro eliminar el usuario \"%s\"\n\n", r.params.User))
 	}
 }
 
@@ -45,7 +46,7 @@ func (r *Rmusr) SaveParams(parametros []string) ParametrosRmusr {
 
 func (r *Rmusr) Rmusr(user string) bool {
 	if user == "" {
-		fmt.Println("no se encontro ningun nombre")
+		consola.AddToConsole("no se encontro ningun nombre\n")
 		return true
 	}
 	if logger.Log.IsLoggedIn() && logger.Log.UserIsRoot() {
@@ -72,15 +73,14 @@ func (r *Rmusr) RmusrPartition(user string, whereToStart int64, path string) boo
 		tablaInodo.I_mtime[i] = mtime.String()[i]
 	}
 	if !r.ExisteUsuario(ReadFile(&tablaInodo, path, &superbloque), user) {
-		fmt.Println("no existe usuario con ese nombre", user)
+		consola.AddToConsole(fmt.Sprintf("no existe usuario con ese nombre %s\n", user))
 		return false
 	}
 	contenido := modFile(&tablaInodo, path, &superbloque)
 	nuevoContenido := r.DesactivarUsuario(contenido, user)
 	// fmt.Println(nuevoContenido)
 	if SetFile(&tablaInodo, path, &superbloque, nuevoContenido) {
-		fmt.Println(ReadFile(&tablaInodo, path, &superbloque))
-		fmt.Println(ReadFile(&tablaInodo, path, &superbloque))
+		consola.AddToConsole(ReadFile(&tablaInodo, path, &superbloque))
 		return true
 	}
 	return false

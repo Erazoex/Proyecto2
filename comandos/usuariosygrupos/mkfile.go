@@ -11,6 +11,7 @@ import (
 
 	"github.com/erazoex/proyecto2/bitmap"
 	"github.com/erazoex/proyecto2/comandos"
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
 	"github.com/erazoex/proyecto2/lista"
 	"github.com/erazoex/proyecto2/logger"
@@ -30,9 +31,9 @@ type Mkfile struct {
 func (m *Mkfile) Exe(parametros []string) {
 	m.Params = m.SaveParams(parametros)
 	if m.Mkfile(m.Params.Path, m.Params.R, m.Params.Size, m.Params.Cont) {
-		fmt.Printf("\nel archivo con ruta %s se creo correctamente\n\n", m.Params.Path)
+		consola.AddToConsole(fmt.Sprintf("\nel archivo con ruta %s se creo correctamente\n\n", m.Params.Path))
 	} else {
-		fmt.Printf("\nel archivo con ruta %s no se pudo crear\n\n", m.Params.Path)
+		consola.AddToConsole(fmt.Sprintf("\nel archivo con ruta %s no se pudo crear\n\n", m.Params.Path))
 	}
 }
 
@@ -66,12 +67,12 @@ func (m *Mkfile) SaveParams(parametros []string) ParametrosMkfile {
 
 func (m *Mkfile) Mkfile(path string, r bool, size int, cont string) bool {
 	if path == "" {
-		fmt.Println("no se encontro una ruta")
+		consola.AddToConsole("no se encontro una ruta\n")
 		return false
 	}
 	path = strings.Replace(path, "/", "", 1)
 	if !logger.Log.IsLoggedIn() {
-		fmt.Println("no se encuentra un usuario loggeado para crear un archivo")
+		consola.AddToConsole("no se encuentra un usuario loggeado para crear un archivo\n")
 		return false
 	}
 
@@ -232,7 +233,7 @@ func getContent(cont string) string {
 	// aqui hay que leer el archivo y ejecutarlo
 	file, err := os.Open(cont)
 	if err != nil {
-		fmt.Printf("Error al intentar abrir el archivo: %s\n", cont)
+		consola.AddToConsole(fmt.Sprintf("Error al intentar abrir el archivo: %s\n", cont))
 		return ""
 	}
 
@@ -249,7 +250,7 @@ func getContent(cont string) string {
 
 	// comprobar que no hubo error al leer el archivo
 	if err := scanner.Err(); err != nil {
-		fmt.Println("Error al leer el archivo: ", err)
+		consola.AddToConsole(fmt.Sprintf("Error al leer el archivo: %s\n", err))
 		return ""
 	}
 	return content

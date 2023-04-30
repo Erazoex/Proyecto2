@@ -7,6 +7,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
 	"github.com/erazoex/proyecto2/lista"
 )
@@ -23,9 +24,9 @@ type Mkfs struct {
 func (m *Mkfs) Exe(parametros []string) {
 	m.Params = m.SaveParams(parametros)
 	if m.Mkfs(m.Params.Id, m.Params.T) {
-		fmt.Printf("\nel formateo con EXT2 de la particion con id %s fue exitoso\n\n", m.Params.Id)
+		consola.AddToConsole(fmt.Sprintf("\nel formateo con EXT2 de la particion con id %s fue exitoso\n\n", m.Params.Id))
 	} else {
-		fmt.Printf("no se logro formatear la particion con id %s\n", m.Params.Id)
+		consola.AddToConsole(fmt.Sprintf("no se logro formatear la particion con id %s\n", m.Params.Id))
 	}
 }
 
@@ -51,12 +52,12 @@ func (m *Mkfs) SaveParams(parametros []string) ParametrosMkfs {
 func (m *Mkfs) Mkfs(id string, t string) bool {
 	// comprobando que id no este vacio
 	if id == "" {
-		fmt.Println("no se encontro el id entre los comandos")
+		consola.AddToConsole("no se encontro el id entre los comandos\n")
 		return false
 	}
 	// comprobando que type no lleve un valor incorrecto
 	if t != "full" && t != "FULL" && t != "" {
-		fmt.Println("el valor del comando type no es permitido")
+		consola.AddToConsole("el valor del comando type no es permitido\n")
 		return false
 	}
 	if t == "" || t == "full" {
@@ -66,7 +67,7 @@ func (m *Mkfs) Mkfs(id string, t string) bool {
 	nodo := lista.ListaMount.GetNodeById(id)
 	// fmt.Println(nodo)
 	if nodo == nil {
-		fmt.Printf("el id %s no coincide con ninguna particion montada\n", id)
+		consola.AddToConsole(fmt.Sprintf("el id %s no coincide con ninguna particion montada\n", id))
 		return false
 	}
 	m.Ext2(nodo)
@@ -86,7 +87,7 @@ func (m *Mkfs) Ext2(nodo *lista.MountNode) {
 	n := float64(float64(partSize-int(unsafe.Sizeof(datos.SuperBloque{}))) / float64(4+int(unsafe.Sizeof(datos.TablaInodo{}))+3*int(unsafe.Sizeof(datos.BloqueDeArchivos{}))))
 	// fmt.Println(math.Floor(n))
 	if math.Floor(n) < 1 {
-		fmt.Println("el tamano de la particion es mas pequeno que el sistema de archivos")
+		consola.AddToConsole("el tamano de la particion es mas pequeno que el sistema de archivos\n")
 		return
 	}
 	inodesQuantity := int64(math.Floor(n))
@@ -237,5 +238,5 @@ func (m *Mkfs) Ext2(nodo *lista.MountNode) {
 		// aqui igual deberia de ir
 		fmt.Println("")
 	}
-	fmt.Println("El formateo fue exitoso")
+	consola.AddToConsole("El formateo fue exitoso\n")
 }

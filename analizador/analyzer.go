@@ -8,6 +8,7 @@ import (
 
 	"github.com/erazoex/proyecto2/comandos"
 	"github.com/erazoex/proyecto2/comandos/usuariosygrupos"
+	"github.com/erazoex/proyecto2/consola"
 )
 
 type Analyzer struct {
@@ -82,12 +83,12 @@ func (a *Analyzer) MatchParams(command string, params []string) {
 		r := usuariosygrupos.Rep{}
 		r.Exe(params)
 	} else if strings.Contains(command, "#") {
-		fmt.Printf("%s", command)
+		contenido := command
 		for i := 0; i < len(params); i++ {
-			fmt.Printf("%s", params[i])
+			contenido += params[i]
 		}
-		fmt.Println("")
-		fmt.Println("")
+		contenido += "\n\n"
+		consola.AddToConsole(contenido)
 	}
 }
 

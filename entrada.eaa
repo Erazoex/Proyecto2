@@ -30,3 +30,6 @@ mkdir >path=/temp
 rep >id=532disco1 >path=/home/mia/reports/reporte1.pdf >name=disk
 rep >id=532disco1 >path=/home/mia/reports/reporte2.pdf >name=sb
 rep >id=532disco1 >path=/home/mia/reports/reporte3.pdf >ruta=/home/user/docs/a.txt >name=file
+rep >id=532disco1 >path=/home/mia/reports/reporte4.pdf >ruta=/home/user/docs/b.txt >name=file
+rep >id=532disco1 >path=/home/mia/reports/reporte5.pdf >name=tree
+rep >id=532disco1 >path=/home/mia/reports/reporte6.pdf >ruta=/users.txt >name=file

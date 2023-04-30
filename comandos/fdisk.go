@@ -7,7 +7,9 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
+	"github.com/erazoex/proyecto2/functions"
 )
 
 type ParametrosFdisk struct {
@@ -26,9 +28,9 @@ type Fdisk struct {
 func (f *Fdisk) Exe(parametros []string) {
 	f.Params = f.SaveParams(parametros)
 	if f.Fdisk(f.Params.Name, f.Params.Path, f.Params.Size, f.Params.Unit, f.Params.Fit, f.Params.Type) {
-		fmt.Printf("\nfdisk realizado con exito para la ruta: %s y particion: %s\n\n", f.Params.Path, string(f.Params.Name[:]))
+		consola.AddToConsole(fmt.Sprintf("\nfdisk realizado con exito para la ruta: %s y particion: %s\n\n", f.Params.Path, string(f.Params.Name[:])))
 	} else {
-		fmt.Printf("\n[ERROR!] no se logro realizar el comando fdisk para la ruta: %s\n\n", f.Params.Path)
+		consola.AddToConsole(fmt.Sprintf("\n[ERROR!] no se logro realizar el comando fdisk para la ruta: %s\n\n", f.Params.Path))
 	}
 }
 
@@ -85,7 +87,7 @@ func (f *Fdisk) SaveParams(parametros []string) ParametrosFdisk {
 
 func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte, t byte) bool {
 	if path == "" {
-		fmt.Println("no se encontro una ruta")
+		consola.AddToConsole("no se encontro una ruta\n")
 		return false
 	}
 	master := GetMBR(path)
@@ -101,17 +103,17 @@ func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte,
 	} else if unit == 0 {
 		fileSize = size * 1024
 	} else {
-		fmt.Println("debe ingresar una letra de tamano correcta")
+		consola.AddToConsole("debe ingresar una letra de tamano correcta\n")
 		return false
 	}
 	// se debe comprobar que no exista ninguna particion con el mismo nombre
 	if ExisteParticion(&master, name) {
-		fmt.Printf("ya existe una particion con nombre: \"%s\"\n", string(name[:]))
+		consola.AddToConsole(fmt.Sprintf("ya existe una particion con nombre: \"%s\"\n", string(functions.TrimArray(name[:]))))
 		return false
 	}
 	// comprobando el tamano de la particion, este debe ser mayor que cero
 	if size <= 0 {
-		fmt.Println("el tamano de la particion tiene que ser mayor a 0")
+		consola.AddToConsole("el tamano de la particion tiene que ser mayor a 0\n")
 		return false
 	}
 	// definiendo el tipo de fit que la particion tendra, como default se utilizara Worst Fit
@@ -124,7 +126,7 @@ func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte,
 	} else if fit == 0 {
 		newPartition.Part_fit = 'w'
 	} else {
-		fmt.Println("se debe ingresar un tipo de fit valido")
+		consola.AddToConsole("se debe ingresar un tipo de fit valido\n")
 		return false
 	}
 	// verificando que el tamano de la particion a crear sea menor
@@ -138,7 +140,7 @@ func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte,
 	// fmt.Println("espacio disponible, espacio a utilizar:", int(master.Mbr_tamano)-totalSize, fileSize)
 	if t != 'l' && t != 'L' {
 		if fileSize > int(master.Mbr_tamano)-int(totalSize) {
-			fmt.Println("el tamano de la particion es mas grande que el disco")
+			consola.AddToConsole("el tamano de la particion es mas grande que el disco\n")
 			return false
 		}
 	}
@@ -147,7 +149,7 @@ func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte,
 	if t == 0 {
 		t = 'p'
 	} else if t != 'p' && t != 'e' && t != 'l' && t != 'P' && t != 'E' && t != 'L' {
-		fmt.Printf("el tipo de la particion no es valido: \"%c\"\n", t)
+		consola.AddToConsole(fmt.Sprintf("el tipo de la particion no es valido: \"%c\"\n", t))
 		return false
 	}
 	newPartition.Part_size = int64(fileSize)
@@ -185,7 +187,7 @@ func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte,
 	}
 	// sino se encuentra un espacio libre para particion
 	if !existeParticionLibre {
-		fmt.Println("no se encuentra ninguna particion libre para crear dentro del disco")
+		consola.AddToConsole("no se encuentra ninguna particion libre para crear dentro del disco\n")
 		return false
 	}
 	// comprobamos que tipo de particion es, luego la creamos
@@ -193,13 +195,13 @@ func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte,
 		f.CreatePrimaryPartition(&master, newPartition)
 	} else if t == 'e' || t == 'E' {
 		if existeParticionExtendida {
-			fmt.Println("no puede haber mas de una particion extendida")
+			consola.AddToConsole("no puede haber mas de una particion extendida\n")
 			return false
 		}
 		f.CreateExtendedPartition(&master, newPartition, path)
 	} else if t == 'l' || t == 'L' {
 		if !existeParticionExtendida {
-			fmt.Println("no existe una particion extendida para crear una particion logica")
+			consola.AddToConsole("no existe una particion extendida para crear una particion logica\n")
 			return false
 		}
 		particionLogica := datos.EBR{}
@@ -214,6 +216,7 @@ func (f *Fdisk) Fdisk(name [16]byte, path string, size int, unit byte, fit byte,
 
 	}
 	WriteMBR(&master, path)
+	PrintPartitions(&master)
 	return true
 }
 
@@ -386,10 +389,11 @@ func FirstFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int,
 		}
 	}
 	// aqui deberia ir un print a la consola
+	PrintLogicPartitions(path, int64(whereToStart), int64(partitionSize), extendedName)
 	return true
 }
 
-func BestFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extededName [16]byte) bool {
+func BestFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extendedName [16]byte) bool {
 	var particionesLogicas []datos.EBR
 	temp := datos.EBR{}
 	totalSize := 0
@@ -455,10 +459,11 @@ func BestFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int, 
 		}
 	}
 	// aqui deberia ir un print a la consola
+	PrintLogicPartitions(path, int64(whereToStart), int64(partitionSize), extendedName)
 	return true
 }
 
-func WorstFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extededName [16]byte) bool {
+func WorstFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int, partitionSize int, extendedName [16]byte) bool {
 	var particionesLogicas []datos.EBR
 	temp := datos.EBR{}
 	totalSize := 0
@@ -524,6 +529,7 @@ func WorstFitLogicPart(logicPartition *datos.EBR, path string, whereToStart int,
 		}
 	}
 	// aqui deberia ir un print a la consola
+	PrintLogicPartitions(path, int64(whereToStart), int64(partitionSize), extendedName)
 	return true
 }
 
@@ -534,4 +540,76 @@ func ExisteParticion(master *datos.MBR, name [16]byte) bool {
 		}
 	}
 	return false
+}
+
+func PrintPartitions(master *datos.MBR) {
+	str := ""
+	for i := 0; i < 70; i++ {
+		str += "-"
+	}
+	contenido := ""
+	contenido += fmt.Sprintf("%s\n", str)
+	contenido += fmt.Sprintf("%-20s%-10s%-10s%-10s%-10s%-10s\n", "Name", "Type", "Fit", "Start", "Size", "Status")
+	for _, part := range master.Mbr_partitions {
+		contenido += fmt.Sprintf("%s\n", str)
+		if string(functions.TrimArray(part.Part_name[:])) == "" {
+			contenido += fmt.Sprintf("%-20s", "-")
+		} else {
+			contenido += fmt.Sprintf("%-20s", string(functions.TrimArray(part.Part_name[:])))
+		}
+		if part.Part_type == '0' {
+			contenido += fmt.Sprintf("%-10c", '-')
+		} else {
+			contenido += fmt.Sprintf("%-10c", part.Part_type)
+		}
+		if part.Part_fit == '0' {
+			contenido += fmt.Sprintf("%-10c", '-')
+		} else {
+			contenido += fmt.Sprintf("%-10c", part.Part_fit)
+		}
+		contenido += fmt.Sprintf("%-10d", part.Part_start)
+		contenido += fmt.Sprintf("%-10d", part.Part_size)
+		contenido += fmt.Sprintf("%-10c\n", part.Part_status)
+	}
+	contenido += fmt.Sprintf("%s\n", str)
+	consola.AddToConsole(contenido)
+}
+
+func PrintLogicPartitions(path string, whereToStart, PartitionSize int64, extendedName [16]byte) {
+	str := ""
+	for i := 0; i < 70; i++ {
+		str += "-"
+	}
+	contenido := ""
+	contenido += fmt.Sprintf("Partition name: %s\n", string(functions.TrimArray(extendedName[:])))
+	contenido += fmt.Sprintf("Partition size: %d\n", PartitionSize)
+	contenido += fmt.Sprintf("%s\n", str)
+	contenido += fmt.Sprintf("%-20s%-12s%-10s%-10s%-10s%-10s\n", "Name", "Next Part", "Fit", "Start", "Size", "Status")
+	var temp datos.EBR
+	Fread(&temp, path, whereToStart)
+	flag := true
+	for flag {
+		contenido += fmt.Sprintf("%s\n", str)
+		if string(functions.TrimArray(temp.Part_name[:])) == "" {
+			contenido += fmt.Sprintf("%-20s", "Disponible")
+		} else {
+			contenido += fmt.Sprintf("%-20s", string(functions.TrimArray(temp.Part_name[:])))
+		}
+		contenido += fmt.Sprintf("%-12d", temp.Part_next)
+		if temp.Part_fit == '0' {
+			contenido += fmt.Sprintf("%-10c", '-')
+		} else {
+			contenido += fmt.Sprintf("%-10c", temp.Part_fit)
+		}
+		contenido += fmt.Sprintf("%-10d", temp.Part_start)
+		contenido += fmt.Sprintf("%-10d", temp.Part_size)
+		contenido += fmt.Sprintf("%-10c\n", temp.Part_status)
+		if temp.Part_next == -1 {
+			flag = false
+		} else {
+			Fread(&temp, path, temp.Part_next)
+		}
+	}
+	contenido += fmt.Sprintf("%s\n", str)
+	consola.AddToConsole(contenido)
 }

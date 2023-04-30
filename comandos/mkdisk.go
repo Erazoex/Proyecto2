@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
 )
 
@@ -24,9 +25,9 @@ type Mkdisk struct {
 func (m *Mkdisk) Exe(parametros []string) {
 	m.Params = m.SaveParams(parametros)
 	if m.Mkdisk(m.Params.Size, m.Params.Fit, m.Params.Unit, m.Params.Path) {
-		fmt.Printf("\nmkdisk realizado con exito para la ruta: %s\n\n", m.Params.Path)
+		consola.AddToConsole(fmt.Sprintf("\nmkdisk realizado con exito para la ruta: %s\n\n", m.Params.Path))
 	} else {
-		fmt.Printf("\n[ERROR!] no se logro realizar el comando mkdisk para la ruta: %s\n\n", m.Params.Path)
+		consola.AddToConsole(fmt.Sprintf("\n[ERROR!] no se logro realizar el comando mkdisk para la ruta: %s\n\n", m.Params.Path))
 	}
 }
 
@@ -66,12 +67,12 @@ func (m *Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
 	var master datos.MBR
 	// Comprobando si existe una ruta valida para la creacion del disco
 	if path == "" {
-		fmt.Println("no se encontro una ruta")
+		consola.AddToConsole("no se encontro una ruta\n")
 		return false
 	}
 	// comprobando el tamano del disco, debe ser mayor que cero
 	if size <= 0 {
-		fmt.Println("el tamano del disco debe ser mayor que 0")
+		consola.AddToConsole("el tamano del disco debe ser mayor que 0\n")
 		return false
 	}
 	// tipo de unidad a utilizar, si el parametro esta vacio se utilizaran MegaBytes como default size
@@ -82,7 +83,7 @@ func (m *Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
 	} else if unit == ' ' {
 		fileSize = size * 1024
 	} else {
-		fmt.Println("se debe ingresar una letra que corresponda un tamano valido")
+		consola.AddToConsole("se debe ingresar una letra que corresponda un tamano valido\n")
 		return false
 	}
 	// definiendo el tipo de fit que el disco tendra, como default sera First Fit
@@ -97,7 +98,7 @@ func (m *Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
 	} else if fit == 0 {
 		master.Dsk_fit = 'f'
 	} else {
-		fmt.Println("se debe ingresar un tipo de fit valido")
+		consola.AddToConsole("se debe ingresar un tipo de fit valido\n")
 		return false
 	}
 	// llenando el buffer con '0' para indicar que esta vacio.
@@ -110,14 +111,14 @@ func (m *Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
 	MkDirectory(path) // creando el directorio para el disco sino existe
 	binaryFile, err := os.Create(path)
 	if err != nil {
-		fmt.Println("error al crear el disco")
+		consola.AddToConsole("error al crear el disco\n")
 		return false
 	}
 	defer binaryFile.Close()
 	for iterator < fileSize {
 		_, err := binaryFile.Write(bloque[:])
 		if err != nil {
-			fmt.Println("error al llenar el disco creado")
+			consola.AddToConsole("error al llenar el disco creado\n")
 		}
 		iterator++
 	}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/erazoex/proyecto2/consola"
 )
 
 type ParametrosRmdisk struct {
@@ -17,9 +19,9 @@ type Rmdisk struct {
 func (r *Rmdisk) Exe(parametros []string) {
 	r.Params = r.SaveParams(parametros)
 	if r.Rmdisk(r.Params.Path) {
-		fmt.Printf("\nrmdisk realizado con exito para la ruta: %s\n\n", r.Params.Path)
+		consola.AddToConsole(fmt.Sprintf("\nrmdisk realizado con exito para la ruta: %s\n\n", r.Params.Path))
 	} else {
-		fmt.Printf("\n[ERROR!] no se logro realizar el comando rmdisk para la ruta: %s\n\n", r.Params.Path)
+		consola.AddToConsole(fmt.Sprintf("\n[ERROR!] no se logro realizar el comando rmdisk para la ruta: %s\n\n", r.Params.Path))
 	}
 }
 
@@ -41,12 +43,12 @@ func (r *Rmdisk) SaveParams(parametros []string) ParametrosRmdisk {
 func (r *Rmdisk) Rmdisk(path string) bool {
 	// Comprobando si existe una ruta valida para la creacion del disco
 	if path == "" {
-		fmt.Println("no se encontro una ruta", "path = \"\"")
+		consola.AddToConsole("no se encontro una ruta\n")
 		return false
 	}
 	err := os.Remove(path)
 	if err != nil {
-		fmt.Println("no se pudo eliminar el archivo", err.Error())
+		consola.AddToConsole(fmt.Sprintf("no se pudo eliminar el archivo %s\n", err.Error()))
 		return false
 	}
 	return true

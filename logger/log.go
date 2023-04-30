@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/functions"
 )
 
@@ -42,7 +43,7 @@ func (l *Logger) Logout() bool {
 		l.Usr = nil
 		return true
 	}
-	fmt.Println("no habia un usuario loggeado")
+	consola.AddToConsole("no habia un usuario loggeado")
 	return false
 }
 

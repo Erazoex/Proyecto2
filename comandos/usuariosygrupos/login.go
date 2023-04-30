@@ -7,6 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/erazoex/proyecto2/comandos"
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
 	"github.com/erazoex/proyecto2/functions"
 	"github.com/erazoex/proyecto2/lista"
@@ -26,9 +27,9 @@ type Login struct {
 func (l *Login) Exe(parametros []string) {
 	l.Params = l.SaveParams(parametros)
 	if l.Login(l.Params.User, l.Params.Pwd, l.Params.Id) {
-		fmt.Printf("\nusuario \"%s\" loggeado con exito\n\n", l.Params.User)
+		consola.AddToConsole(fmt.Sprintf("\nusuario \"%s\" loggeado con exito\n\n", l.Params.User))
 	} else {
-		fmt.Printf("no se logro loggear el usuario \"%s\"\n\n", l.Params.User)
+		consola.AddToConsole(fmt.Sprintf("no se logro loggear el usuario \"%s\"\n\n", l.Params.User))
 	}
 }
 
@@ -55,21 +56,21 @@ func (l *Login) SaveParams(parametros []string) ParametrosLogin {
 
 func (l *Login) Login(User [10]byte, Pwd [10]byte, Id string) bool {
 	if bytes.Equal(User[:], []byte("")) {
-		fmt.Println("no hay user el cual utilizar")
+		consola.AddToConsole("no hay user el cual utilizar\n")
 		return false
 	}
 	if bytes.Equal(Pwd[:], []byte("")) {
-		fmt.Println("el usuario no tiene password")
+		consola.AddToConsole("el usuario no tiene password\n")
 		return false
 	}
 	if Id == "" {
-		fmt.Println("no hay id para buscar en las particiones montadas")
+		consola.AddToConsole("no hay id para buscar en las particiones montadas\n")
 		return false
 	}
 
 	node := lista.ListaMount.GetNodeById(Id)
 	if node == nil {
-		fmt.Printf("el id %s no coincide con ninguna particion montada\n", Id)
+		consola.AddToConsole(fmt.Sprintf("el id %s no coincide con ninguna particion montada\n", Id))
 		return false
 	}
 	if node.Value != nil {
@@ -78,9 +79,9 @@ func (l *Login) Login(User [10]byte, Pwd [10]byte, Id string) bool {
 		return l.LoginInLogicPartition(node.Ruta, User, Pwd, Id, node.ValueL)
 	} else {
 		// no deberia de entrar aqui nunca
-		fmt.Println("no hay particion montada")
+		consola.AddToConsole("no hay particion montada\n")
 	}
-	fmt.Printf("no se logro loggear el usuario: %s", User)
+	consola.AddToConsole(fmt.Sprintf("no se logro loggear el usuario: %s\n", User))
 	return false
 }
 
@@ -124,7 +125,7 @@ func (l *Login) LoginInPrimaryPartition(path string, User [10]byte, Pwd [10]byte
 		copy(user.Grupo[:], grupo)
 		return logger.Log.Login(user)
 	}
-	fmt.Println("no se encontro el usuario dentro del archivo")
+	consola.AddToConsole("no se encontro el usuario dentro del archivo\n")
 	return false
 }
 
@@ -168,6 +169,6 @@ func (l *Login) LoginInLogicPartition(path string, User [10]byte, Pwd [10]byte, 
 		copy(user.Grupo[:], grupo)
 		return logger.Log.Login(user)
 	}
-	fmt.Println("no se encontro el usuario dentro del archivo")
+	consola.AddToConsole("no se encontro el usuario dentro del archivo\n")
 	return false
 }

@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/erazoex/proyecto2/comandos"
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
 	"github.com/erazoex/proyecto2/lista"
 	"github.com/erazoex/proyecto2/logger"
@@ -24,9 +25,9 @@ type Mkgrp struct {
 func (m *Mkgrp) Exe(parametros []string) {
 	m.params = m.SaveParams(parametros)
 	if m.Mkgrp(m.params.Name) {
-		fmt.Printf("\ngrupo \"%s\" creado con exito\n\n", m.params.Name)
+		consola.AddToConsole(fmt.Sprintf("\ngrupo \"%s\" creado con exito\n\n", m.params.Name))
 	} else {
-		fmt.Printf("no se logro crear el grupo \"%s\"\n\n", m.params.Name)
+		consola.AddToConsole(fmt.Sprintf("no se logro crear el grupo \"%s\"\n\n", m.params.Name))
 	}
 }
 
@@ -46,7 +47,7 @@ func (m *Mkgrp) SaveParams(parametros []string) ParametrosMkgrp {
 
 func (m *Mkgrp) Mkgrp(name string) bool {
 	if name == "" {
-		fmt.Println("no se encontro ningun nombre")
+		consola.AddToConsole("no se encontro ningun nombre\n")
 		return true
 	}
 	if logger.Log.IsLoggedIn() && logger.Log.UserIsRoot() {
@@ -73,14 +74,14 @@ func (m *Mkgrp) MkgrpPartition(name string, whereToStart int64, path string) boo
 		tablaInodo.I_mtime[i] = mtime.String()[i]
 	}
 	if m.ExisteGrupo(ReadFile(&tablaInodo, path, &superbloque), name) {
-		fmt.Println("ya existe grupo con ese nombre", name)
+		consola.AddToConsole(fmt.Sprintf("ya existe grupo con ese nombre %s\n", name))
 		return false
 	}
 	numero := m.ContarGrupos(ReadFile(&tablaInodo, path, &superbloque))
 	grupo := m.AgregarGrupo(numero, name)
 	if AppendFile(path, &superbloque, &tablaInodo, grupo) {
 		comandos.Fwrite(&tablaInodo, path, superbloque.S_inode_start+int64(unsafe.Sizeof(datos.TablaInodo{})))
-		fmt.Println(ReadFile(&tablaInodo, path, &superbloque))
+		consola.AddToConsole(ReadFile(&tablaInodo, path, &superbloque))
 		comandos.Fwrite(&superbloque, path, whereToStart)
 		return true
 	}

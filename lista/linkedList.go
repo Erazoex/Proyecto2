@@ -5,7 +5,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
+	"github.com/erazoex/proyecto2/functions"
 )
 
 type MountNode struct {
@@ -140,18 +142,51 @@ func (m *MountList) GetSize() int {
 }
 
 func (m *MountList) GetId(node *MountNode) {
-	fmt.Println("Id:", node.Key)
+	consola.AddToConsole(fmt.Sprintf("Id: %s\n", node.Key))
 }
 
 func (m *MountList) PrintList() {
+	str := ""
+	for i := 0; i < 110; i++ {
+		str += "-"
+	}
+	contenido := ""
+	contenido += fmt.Sprintf("%s\n", str)
+	contenido += fmt.Sprintf("%-15s", "Id")
+	contenido += fmt.Sprintf("%-15s", "Name")
+	contenido += fmt.Sprintf("%-10s", "Type")
+	contenido += fmt.Sprintf("%-10s", "Fit")
+	contenido += fmt.Sprintf("%-10s", "Start")
+	contenido += fmt.Sprintf("%-10s", "Size")
+	contenido += fmt.Sprintf("%-10s", "Status")
+	contenido += fmt.Sprintf("%-30s\n", "Ruta")
 	if !m.IsEmpty() {
 		temp := m.First
 		for temp != nil {
-			fmt.Println("key:", temp.Key)
-			fmt.Println("path:", temp.Ruta)
+			contenido += fmt.Sprintf("%s\n", str)
+			contenido += fmt.Sprintf("%-15s", temp.Key)
+			if temp.Value != nil {
+				contenido += fmt.Sprintf("%-15s", string(functions.TrimArray(temp.Value.Part_name[:])))
+				contenido += fmt.Sprintf("%-10c", temp.Value.Part_type)
+				contenido += fmt.Sprintf("%-10c", temp.Value.Part_fit)
+				contenido += fmt.Sprintf("%-10d", temp.Value.Part_start)
+				contenido += fmt.Sprintf("%-10d", temp.Value.Part_size)
+				contenido += fmt.Sprintf("%-10c", temp.Value.Part_status)
+
+			} else if temp.ValueL != nil {
+				contenido += fmt.Sprintf("%-15s", string(functions.TrimArray(temp.ValueL.Part_name[:])))
+				contenido += fmt.Sprintf("%-10s", "L")
+				contenido += fmt.Sprintf("%-10c", temp.ValueL.Part_fit)
+				contenido += fmt.Sprintf("%-10d", temp.ValueL.Part_start)
+				contenido += fmt.Sprintf("%-10d", temp.ValueL.Part_size)
+				contenido += fmt.Sprintf("%-10c", temp.ValueL.Part_status)
+			}
+			contenido += fmt.Sprintf("%-30s\n", temp.Ruta)
 			temp = temp.Next
 		}
 	}
+	contenido += fmt.Sprintf("%s\n\n", str)
+	consola.AddToConsole(contenido)
 }
 
 var ListaMount = MountList{

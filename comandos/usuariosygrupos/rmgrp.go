@@ -7,6 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/erazoex/proyecto2/comandos"
+	"github.com/erazoex/proyecto2/consola"
 	"github.com/erazoex/proyecto2/datos"
 	"github.com/erazoex/proyecto2/lista"
 	"github.com/erazoex/proyecto2/logger"
@@ -23,9 +24,9 @@ type Rmgrp struct {
 func (r *Rmgrp) Exe(parametros []string) {
 	r.params = r.SaveParams(parametros)
 	if r.Rmgrp(r.params.Name) {
-		fmt.Printf("\ngrupo \"%s\" eliminado con exito\n\n", r.params.Name)
+		consola.AddToConsole(fmt.Sprintf("\ngrupo \"%s\" eliminado con exito\n\n", r.params.Name))
 	} else {
-		fmt.Printf("no se logro eliminar el grupo \"%s\"\n\n", r.params.Name)
+		consola.AddToConsole(fmt.Sprintf("no se logro eliminar el grupo \"%s\"\n\n", r.params.Name))
 	}
 }
 
@@ -45,7 +46,7 @@ func (r *Rmgrp) SaveParams(parametros []string) ParametrosRmgrp {
 
 func (r *Rmgrp) Rmgrp(name string) bool {
 	if name == "" {
-		fmt.Println("no se encontro ningun nombre")
+		consola.AddToConsole("no se encontro ningun nombre\n")
 		return true
 	}
 	if logger.Log.IsLoggedIn() && logger.Log.UserIsRoot() {
@@ -72,14 +73,14 @@ func (r *Rmgrp) RmgrpPartition(name string, whereToStart int64, path string) boo
 		tablaInodo.I_mtime[i] = mtime.String()[i]
 	}
 	if !r.ExisteGrupo(ReadFile(&tablaInodo, path, &superbloque), name) {
-		fmt.Println("no existe grupo con ese nombre", name)
+		consola.AddToConsole(fmt.Sprintf("no existe grupo con ese nombre %s\n", name))
 		return false
 	}
 	contenido := modFile(&tablaInodo, path, &superbloque)
 	nuevoContenido := r.DesactivarGrupo(contenido, name)
 	// fmt.Println(nuevoContenido)
 	if SetFile(&tablaInodo, path, &superbloque, nuevoContenido) {
-		fmt.Println(ReadFile(&tablaInodo, path, &superbloque))
+		consola.AddToConsole(ReadFile(&tablaInodo, path, &superbloque))
 		return true
 	}
 	return false
