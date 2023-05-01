@@ -12,6 +12,12 @@ import (
 func main() {
 	var analizador analizador.Analyzer
 	running := true
+	fmt.Println("Universidad de San Carlos De Guatemala")
+	fmt.Println("Facultad de Ingenieria")
+	fmt.Println("Escuela de ciencias y sistemas")
+	fmt.Println("Seccion A-")
+	fmt.Println("Brian Josue Erazo Sagastume")
+	fmt.Println("201807253")
 	for running {
 		var option string
 		fmt.Printf("\n")

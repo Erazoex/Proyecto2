@@ -137,7 +137,8 @@ func createFile(name [10]byte, path, ruta string, whereToStart int64, r bool, si
 		// fmt.Println("Create content")
 	}
 	// fmt.Println("el content despues de agregarle numeros")
-	// fmt.Println(content)
+	consola.AddToConsole("-------CONTENIDO DEL ARCHIVO-------\n")
+	consola.AddToConsole("\"" + content + "\"\n")
 	num := NewInodeFile(&superbloque, path, userId, groupdId, content)
 	FindDirectories(num, &tablaInodoRoot, path, ruta, &superbloque, 0)
 	comandos.Fwrite(&tablaInodoRoot, path, superbloque.S_inode_start)
