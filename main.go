@@ -26,6 +26,11 @@ func main() {
 			fmt.Println(consola.GetConsole())
 		}
 	}
+	// srv := server.New("8080")
+	// err := srv.ListenAndServe()
+	// if err != nil {
+	// 	panic(err)
+	// }
 }
 
 // execute >path=./entrada.eaa
