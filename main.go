@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/erazoex/proyecto2/analizador"
-	"github.com/erazoex/proyecto2/consola"
 )
 
 func main() {
@@ -29,7 +28,7 @@ func main() {
 			running = false
 		} else {
 			analizador.Exe(option)
-			fmt.Println(consola.GetConsole())
+			// fmt.Println(consola.GetConsole())
 		}
 	}
 	// srv := server.New("8080")

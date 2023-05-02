@@ -29,7 +29,7 @@ func (a *Analyzer) Exe(input string) {
 }
 
 func (a *Analyzer) MatchParams(command string, params []string) {
-	command = strings.Replace(command, " ", "", 1)
+	command = strings.ReplaceAll(command, " ", "")
 	if command == "execute" {
 		for _, v := range params {
 			if strings.Contains(v, "path") {
@@ -39,7 +39,13 @@ func (a *Analyzer) MatchParams(command string, params []string) {
 			}
 		}
 	} else if command == "pause" {
-		fmt.Println("")
+		var option string
+		consola.AddToConsole("\n")
+		consola.AddToConsole("presione 'ENTER' para continuar: ")
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		option = scanner.Text()
+		consola.Nothing(option)
 	} else if command == "mkdisk" {
 		m := comandos.Mkdisk{}
 		m.Exe(params)

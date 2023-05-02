@@ -7,6 +7,7 @@ fdisk >type=P >path=/home/mia/pruebas/disco1.eaa >name=Part2 >unit=k >size=200
 fdisk >type=P >path=/home/mia/pruebas/disco1.eaa >name=Part3 >unit=k >size=200
 fdisk >type=L >path=/home/mia/pruebas/disco1.eaa >name=LogicP1 >unit=k >size=50
 fdisk >type=L >path=/home/mia/pruebas/disco1.eaa >name=LogicP2 >unit=k >size=50
+pause
 fdisk >type=L >path=/home/mia/pruebas/disco1.eaa >name=LogicP3 >unit=k >size=50
 # aqui comienza el montaje
 mount >path=/home/mia/pruebas/disco1.eaa >name=LogicP1
@@ -18,6 +19,7 @@ login >user=root >pwd=123 >id=532disco1
 mkgrp >name="grupo 1"
 mkgrp >name=admins
 rmgrp >name="grupo 1"
+pause
 mkusr >user=brian >pwd=456 >grp=admins
 mkusr >user=brian >pwd=456 >grp=admins
 mkusr >user=josue >pwd=456 >grp=admins
