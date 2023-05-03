@@ -1,0 +1,154 @@
+#Calificacion MIA 2022 - PROYECTO 2
+
+# --- PARTE 1 ---
+
+#CREACION DE DISCOS
+mkdisk >size=112 >unit=M >path=/home/parte2/disco.dk
+mkdisk >size=1 >path="/home/parte1/eliminar.dk"
+
+pause
+
+#ELIMINACION DE DISCOS
+#Debe de dar error por que no existe disco con ese nombre
+rmdisk >path="/home/a eliminar disco/no_existo.dk"
+
+rmdisk >path="/home/parte1/eliminar.dk"
+
+pause
+
+#CREACION DE PARTICIONES
+#Debe dar error por que no existe particion extendida
+fdisk >type=L >unit=M >name=PartX >size=5 >path=/home/parte2/disco.dk
+
+fdisk >type=P >unit=M >name=Part1 >size=25 >path=/home/parte2/disco.dk
+fdisk >type=P >unit=M >name=Part2 >size=25 >path=/home/parte2/disco.dk
+fdisk >type=P >unit=M >name=Part3 >size=25 >path=/home/parte2/disco.dk
+fdisk >type=E >unit=M >name=Part4 >size=25 >path=/home/parte2/disco.dk
+fdisk >type=L >unit=M >name=Part5 >size=5 >path=/home/parte2/disco.dk
+fdisk >type=L >unit=M >name=Part6 >size=5 >path=/home/parte2/disco.dk
+
+pause
+
+#MOUNT CARNET DE EJEMPLO 201709362
+#621a 531disco
+mount >path=/home/parte2/disco.dk >name=Part1
+#622a 532disco
+mount >path=/home/parte2/disco.dk >name=Part2
+#623a 533disco
+mount >path=/home/parte2/disco.dk >name=Part3
+
+pause
+
+#REPORTE DISCO
+rep >id=531disco >path=/home/parte1/particiones/disco.jpg >name=disk
+
+pause
+
+# --- PARTE 2 ---
+
+#MKFS A PARTICIONES
+mkfs >id=531disco
+
+pause
+
+#REPORTES INICIALES
+rep >id=531disco >path="/home/parte2/reportes/tree_1.pdf" >name=tree
+
+pause
+
+#INICIO DE SESION
+#Debe dar error porque no existe el user roca
+login >pwd=567 >user=roca >id=531disco
+
+#Debe dar error porque no existe user logeado
+logout
+
+login >pwd=123 >user=root >id=531disco
+
+pause
+
+#CREACION DE GRUPOS
+mkgrp >name=Archivos
+mkgrp >name=Arqui
+mkgrp >name="Compi 2"
+
+pause
+
+#ELIMINACION DE GRUPOS
+rmgrp >name=Arqui
+
+pause
+
+#REPORTES FILE
+rep >id=531disco >path="/home/parte2/reportes/users_1.txt" >ruta="/users.txt" >name=file
+
+pause
+
+#CREACION DE userS
+mkusr >user="user1" >grp=root >pwd=user1
+mkusr >user="user2" >grp="Compi 2" >pwd=user2
+mkusr >user="user3" >grp="Compi 2" >pwd=user3
+
+pause
+
+#ELIMINACION DE userS
+rmusr >user=user3
+
+pause
+
+#REPORTES FILE
+rep >id=531disco >path="/home/parte2/reportes/users_2.txt" >ruta="/users.txt" >name=file
+
+pause
+
+#CREACION DE CARPETAS
+mkdir >r >path=/home/archivos/mia/fase2
+mkdir >r >path=/home/archivos/mia/carpeta2
+mkdir >r >path=/home/archivos/mia/z
+mkdir >path=/home/archivos/mia/carpeta2/a1
+mkdir >path=/home/archivos/mia/carpeta2/a2
+mkdir >path=/home/archivos/mia/carpeta2/a3
+
+pause
+
+#REPORTES TREE
+rep >id=531disco >path="/home/parte2/reportes/tree_3.pdf" >name=tree
+
+pause
+
+#CREACION DE ARCHIVOS
+mkfile >path="/home/b1.txt" >size=15
+mkfile >path="/home/b2.txt" >size=15
+mkfile >path="/home/b3.txt" >size=15
+
+#Debe dar error ruta no existe
+mkfile >path="/home/Noexiste/c1.txt" >size=25
+
+#Debe dar error size negativo
+mkfile >path="/home/d1.txt" >size=-25
+
+pause
+
+#REPORTES TREE
+rep >id=531disco >path="/home/parte2/reportes/tree_4.pdf" >name=tree
+
+pause
+
+mkfile >cont="/home/entrada.txt" >path="/home/bcont.txt"
+
+pause
+
+#REPORTES TREE
+rep >id=531disco >path="/home/parte2/reportes/tree_5.pdf" >name=tree
+
+#REPORTES FILE
+rep >id=531disco >path="/home/parte2/reportes/users_3.txt" >ruta="/home/entrada.txt" >name=file
+
+#REPORTES SUPER BLOQUE
+rep >id=531disco >path="/home/parte2/reportes/SB_1.pdf" >name=sb
+
+pause
+
+logout
+
+pause
