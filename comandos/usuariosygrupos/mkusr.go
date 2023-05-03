@@ -21,39 +21,45 @@ type ParametrosMkusr struct {
 }
 
 type Mkusr struct {
-	params ParametrosMkusr
+	Params ParametrosMkusr
 }
 
 func (m *Mkusr) Exe(parametros []string) {
-	m.params = m.SaveParams(parametros)
-	if m.Mkusr(m.params.User, m.params.Pwd, m.params.Grp) {
-		consola.AddToConsole(fmt.Sprintf("\nusuario \"%s\" creado con exito en el grupo %s\n\n", m.params.User, m.params.Grp))
+	m.Params = m.SaveParams(parametros)
+	if m.Mkusr(m.Params.User, m.Params.Pwd, m.Params.Grp) {
+		consola.AddToConsole(fmt.Sprintf("\nusuario \"%s\" creado con exito en el grupo %s\n\n", m.Params.User, m.Params.Grp))
 	} else {
-		consola.AddToConsole(fmt.Sprintf("no se logro crear el usuario \"%s\"\n\n", m.params.User))
+		consola.AddToConsole(fmt.Sprintf("no se logro crear el usuario \"%s\"\n\n", m.Params.User))
 	}
 }
 
 func (m *Mkusr) SaveParams(parametros []string) ParametrosMkusr {
 	for _, v := range parametros {
 		// fmt.Println(v)
+		v = strings.ReplaceAll(v, "\"", "")
 		v = strings.TrimSpace(v)
 		v = strings.TrimRight(v, " ")
-		v = strings.ReplaceAll(v, "\"", "")
 		if strings.Contains(v, "user") {
 			v = strings.ReplaceAll(v, "user=", "")
-			m.params.User = v
-		} else if strings.Contains(v, "pwd") {
-			v = strings.ReplaceAll(v, "pwd=", "")
-			m.params.Pwd = v
-		} else if strings.Contains(v, "grp") {
+			m.Params.User = v
+		}
+		if strings.Contains(v, "grp") {
 			v = strings.ReplaceAll(v, "grp=", "")
-			m.params.Grp = v
+			m.Params.Grp = v
+		}
+		if strings.Contains(v, "pwd") {
+			v = strings.ReplaceAll(v, "pwd=", "")
+			m.Params.Pwd = v
 		}
 	}
-	return m.params
+	m.Params.User = strings.ReplaceAll(m.Params.User, "pwd=", "")
+	return m.Params
 }
 
 func (m *Mkusr) Mkusr(user string, pwd string, grp string) bool {
+	consola.AddToConsole(user + "\n")
+	consola.AddToConsole(pwd + "\n")
+	consola.AddToConsole(grp + "\n")
 	if user == "" {
 		consola.AddToConsole("no se encontro ningun nombre\n")
 		return true

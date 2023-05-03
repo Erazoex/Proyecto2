@@ -80,7 +80,7 @@ func (m *Mkdisk) Mkdisk(size int, fit byte, unit byte, path string) bool {
 		fileSize = size
 	} else if unit == 'm' || unit == 'M' {
 		fileSize = size * 1024
-	} else if unit == ' ' {
+	} else if unit == 0 {
 		fileSize = size * 1024
 	} else {
 		consola.AddToConsole("se debe ingresar una letra que corresponda un tamano valido\n")

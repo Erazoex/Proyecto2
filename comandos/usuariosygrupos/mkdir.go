@@ -99,7 +99,7 @@ func createDirectory(name [10]byte, path, ruta string, whereToStart int64, r boo
 
 func NewInodeDirectory(superbloque *datos.SuperBloque, path string, userId, groupId int64) int64 {
 	var nuevaTabla datos.TablaInodo
-	posicionActual := bitmap.WriteInBitmapBlock(path, superbloque)
+	posicionActual := bitmap.WriteInBitmapInode(path, superbloque)
 	// aqui llenaremos la nueva tabla de inodos
 	nuevaTabla.I_uid = userId
 	nuevaTabla.I_gid = groupId

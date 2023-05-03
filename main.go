@@ -39,3 +39,4 @@ func main() {
 }
 
 // execute >path=./entrada.eaa
+// execute >path=/home/erazoex/Downloads/calificacion2/Calificacion_Proyecto2.script

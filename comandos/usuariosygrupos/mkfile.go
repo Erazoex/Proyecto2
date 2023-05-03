@@ -75,6 +75,10 @@ func (m *Mkfile) Mkfile(path string, r bool, size int, cont string) bool {
 		consola.AddToConsole("no se encuentra un usuario loggeado para crear un archivo\n")
 		return false
 	}
+	if size < 0 {
+		consola.AddToConsole(("el size no puede ser negativo"))
+		return false
+	}
 
 	if lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value != nil {
 		return createFile(logger.Log.GetUserName(), lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Ruta, path, lista.ListaMount.GetNodeById(logger.Log.GetUserId()).Value.Part_start, r, size, cont)
@@ -109,7 +113,7 @@ func createFile(name [10]byte, path, ruta string, whereToStart int64, r bool, si
 		content = getContent(cont)
 		// fmt.Println(content)
 	}
-	if size != 0 {
+	if size != 0 && size > 0 {
 		// Create content
 		if StrlenBytes([]byte(content)) != 0 && StrlenBytes([]byte(content)) < size {
 			// fmt.Println("entra aqui a ver lo del content")

@@ -110,6 +110,7 @@ func (m *MountList) GetNodeById(key_ string) *MountNode {
 }
 
 func (m *MountList) NodeExist(key_ string) bool {
+	m.PrintList()
 	if !m.IsEmpty() {
 		temp := m.First
 		for temp != nil {
@@ -167,7 +168,7 @@ func (m *MountList) PrintList() {
 			contenido += fmt.Sprintf("%-15s", temp.Key)
 			if temp.Value != nil {
 				contenido += fmt.Sprintf("%-15s", string(functions.TrimArray(temp.Value.Part_name[:])))
-				contenido += fmt.Sprintf("%-10c", temp.Value.Part_type)
+				contenido += fmt.Sprintf("%-10s", string(temp.Value.Part_type))
 				contenido += fmt.Sprintf("%-10c", temp.Value.Part_fit)
 				contenido += fmt.Sprintf("%-10d", temp.Value.Part_start)
 				contenido += fmt.Sprintf("%-10d", temp.Value.Part_size)

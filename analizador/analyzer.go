@@ -90,9 +90,6 @@ func (a *Analyzer) MatchParams(command string, params []string) {
 		r.Exe(params)
 	} else if strings.Contains(command, "#") {
 		contenido := command
-		for i := 0; i < len(params); i++ {
-			contenido += params[i]
-		}
 		contenido += "\n\n"
 		consola.AddToConsole(contenido)
 	}

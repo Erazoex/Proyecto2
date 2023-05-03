@@ -78,7 +78,7 @@ func (r *Rep) Rep(name, path, id, ruta string) bool {
 		return false
 	}
 	if !lista.ListaMount.NodeExist(id) {
-		consola.AddToConsole(fmt.Sprintf("el id: %s, pertenece a una de las particiones montadas\n", id))
+		consola.AddToConsole(fmt.Sprintf("el id: %s, no pertenece a una de las particiones montadas\n", id))
 		return false
 	}
 	if name == "file" && ruta == "" {

@@ -271,7 +271,7 @@ func crearArchivoDentroDeTablaInodo(AgregarTabla, posicionActual int64, tablaIno
 			tablaInodo.I_block[i] = posicionBloqueCarpeta
 			AgregarTablaNueva(&bloqueCarpeta, nombreArchivo, AgregarTabla)
 			comandos.Fwrite(&bloqueCarpeta, path, superbloque.S_block_start+posicionBloqueCarpeta*superbloque.S_block_size)
-			comandos.Fwrite(&tablaInodo, path, superbloque.S_inode_start+posicionActual*superbloque.S_inode_size)
+			comandos.Fwrite(tablaInodo, path, superbloque.S_inode_start+posicionActual*superbloque.S_inode_size)
 			return
 		}
 		comandos.Fread(&bloqueCarpeta, path, superbloque.S_block_start+tablaInodo.I_block[i]*superbloque.S_block_size)

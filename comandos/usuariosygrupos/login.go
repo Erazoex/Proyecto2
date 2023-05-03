@@ -27,9 +27,9 @@ type Login struct {
 func (l *Login) Exe(parametros []string) {
 	l.Params = l.SaveParams(parametros)
 	if l.Login(l.Params.User, l.Params.Pwd, l.Params.Id) {
-		consola.AddToConsole(fmt.Sprintf("\nusuario \"%s\" loggeado con exito\n\n", l.Params.User))
+		consola.AddToConsole(fmt.Sprintf("\nusuario \"%s\" loggeado con exito\n\n", string(functions.TrimArray(l.Params.User[:]))))
 	} else {
-		consola.AddToConsole(fmt.Sprintf("no se logro loggear el usuario \"%s\"\n\n", l.Params.User))
+		consola.AddToConsole(fmt.Sprintf("no se logro loggear el usuario \"%s\"\n\n", string(functions.TrimArray(l.Params.User[:]))))
 	}
 }
 
@@ -106,7 +106,9 @@ func (l *Login) LoginInPrimaryPartition(path string, User [10]byte, Pwd [10]byte
 	}
 	// leeremos el archivo por linea que se encuentre dentro del archivo
 	lineas := strings.Split(contenido, "\n")
+	lineas = lineas[:len(lineas)-1]
 	for _, linea := range lineas {
+		linea = strings.ReplaceAll(linea, "\x00", "")
 		parametros := strings.Split(linea, ",")
 		if parametros[1] != "U" {
 			continue
@@ -114,7 +116,7 @@ func (l *Login) LoginInPrimaryPartition(path string, User [10]byte, Pwd [10]byte
 		grupo := parametros[2]
 		username := parametros[3]
 		password := parametros[4]
-		if !functions.Equal(User, username) || !functions.Equal(Pwd, password) {
+		if !(string(TrimArray(User[:])) == string(TrimArray([]byte(username)))) || !(string(TrimArray(Pwd[:])) == string(TrimArray([]byte(password[:])))) {
 			continue
 		}
 		user := &logger.User{
